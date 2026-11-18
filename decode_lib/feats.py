@@ -10,6 +10,9 @@ CFG = dict(LAM=0.5, MU=0.5, CAP=5.0, THR=6.0, LFL=0.25, NOM_ENS=0.75, REF_ENS=0.
 FEAT_NAMES = ('row', 'row_gap', 'sim_own', 'sim_fl', 'fl_ok', 'rank', 'in_pool', 'd_cyc', 'd_cyc_fl', 'res_cons',
               'softcyc', 'revrank', 'dist_top', 'peak', 'npool', 'base', 'base_gap', 'row_ent', 'n_valid')
 FEAT_NAMES2 = FEAT_NAMES + ('comp', 'comp_mir', 'comp_own') + tuple(f'loc{i}' for i in range(9))
+RING2 = [(dy, dx) for dy in range(-2, 3) for dx in range(-2, 3) if max(abs(dy), abs(dx)) == 2]
+FEAT_NAMES3 = FEAT_NAMES2 + tuple(f'ring{i}' for i in range(16)) + tuple(f'own{i}' for i in range(9)) + (
+    'self_mir', 'self_far', 'q_relx', 'q_rely', 'c_relx', 'c_rely', 'cyc2', 'tmask_frac')
 
 
 def other_arm_kp(pair, a, st):
@@ -120,6 +123,45 @@ def arm_candidates(pair, a, cfg=CFG, with_feats=True, extra=False):
             yy, xx = (cy + dy).clamp(0, nP - 1), (cx + dx).clamp(0, nP - 1)
             F[f'loc{t}'] = rm.view(M, -1).gather(1, yy * nP + xx) - c0 if (dy, dx) != (0, 0) else c0
         names = FEAT_NAMES2
+    if extra == 2:
+        M = st.valid_kpt_indices.numel()
+        rmv = rmap.clamp(min=-1).view(M, -1)
+        for t, (dy, dx) in enumerate(RING2):
+            yy, xx = (cy + dy).clamp(0, nP - 1), (cx + dx).clamp(0, nP - 1)
+            F[f'ring{t}'] = rmv.gather(1, yy * nP + xx) - c0
+        om = st.full_sim_2d.clamp(min=-1).view(M, -1)
+        o0 = om.gather(1, pid)
+        for t, (dy, dx) in enumerate([(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 0), (0, 1), (1, -1), (1, 0), (1, 1)]):
+            yy, xx = (cy + dy).clamp(0, nP - 1), (cx + dx).clamp(0, nP - 1)
+            F[f'own{t}'] = om.gather(1, yy * nP + xx) - o0 if (dy, dx) != (0, 0) else o0
+        # query ambiguity in the source: similarity to its own mirror partner / to far-away source patches
+        sd_ = A['desc']
+        qd = sd_[st.idx_valid]
+        pidx = torch.where(okm, st.idx_valid[pj.clamp(min=0)], st.idx_valid)
+        F['self_mir'] = torch.where(okm, (qd * sd_[pidx]).sum(-1), torch.zeros(M, device=st.device)).unsqueeze(1).expand_as(topk)
+        Ssrc = qd @ st.img1_valid.t()                                              # [M, Ps]
+        sxy = geo.pid_xy(st.src_valid_idx, nP)
+        far = (sxy.unsqueeze(0) - qxy.unsqueeze(1)).norm(dim=-1) > 5
+        F['self_far'] = Ssrc.masked_fill(~far, -1).max(1)[0].unsqueeze(1).expand_as(topk)
+        # positions relative to the object (mask bounding boxes)
+        smx = geo.pid_xy(torch.nonzero(A['mask'], as_tuple=True)[0], nP)
+        tmx = geo.pid_xy(torch.nonzero(pair['trg']['mask'], as_tuple=True)[0], nP)
+        if smx.numel() == 0:
+            smx = sxy
+        if tmx.numel() == 0:
+            tmx = geo.pid_xy(st.tgt_valid_idx, nP)
+        s_lo, s_hi = smx.min(0)[0], smx.max(0)[0]
+        t_lo, t_hi = tmx.min(0)[0], tmx.max(0)[0]
+        qr = (qxy - s_lo) / (s_hi - s_lo).clamp(min=1)
+        cr = (cxy - t_lo) / (t_hi - t_lo).clamp(min=1)
+        F['q_relx'], F['q_rely'] = qr[:, 0:1].expand_as(topk), qr[:, 1:2].expand_as(topk)
+        F['c_relx'], F['c_rely'] = cr[..., 0], cr[..., 1]
+        # 2-hop: candidate -> back-NN -> forward NN; distance back to the candidate (patches)
+        bn_valid = st.src_orig2valid[st.back_nn_orig[topk_idx]]                      # [M,K] valid-src idx
+        fwd = st.sim_valid[bn_valid.reshape(-1)].argmax(1).view(*topk_idx.shape)
+        F['cyc2'] = (geo.pid_xy(st.tgt_valid_idx[fwd], nP) - cxy).norm(dim=-1) / nP
+        F['tmask_frac'] = torch.full_like(topk, float(pair['trg']['mask'].float().mean()))
+        names = FEAT_NAMES3
     out['F'] = torch.stack([F[k] for k in names], -1)
     return st, out
 

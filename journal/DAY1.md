@@ -51,3 +51,9 @@
   Sanity SPair-U top1/dv vs review dumps within ±0.01.
 - Sweeps on seq7 (not kept): MU_ADAPT (μ scaled by consensus inlier ratio) .5/μ1 +3.50, .8/μ1 +3.53, .5 +3.58;
   FL_ALIGN 1 (snap the other-arm location to the most query-similar neighbour) +2.95 → negative.
+- RR_FL (reverse rank in the other arm) .01/.02 → +3.66/+3.66 (+0.07, noise; not kept).
+- T3-joint (decode_lib/t3j.py: DeepSets candidates + 2-layer Transformer across the pair's keypoints), x features,
+  20 ep (542 s): +1.508 over seq5 on dev table vs +1.497 for the per-keypoint model → joint attention adds nothing with
+  these features.
+- AP-10K cross-family cache built (1,454 images, 6,300 pairs, adaptive flip with AP10K_FLIP); evaluating.
+- PROF (relational profile correlation) .02/.05/.1 → +3.53/+3.48/+3.40: negative. AP-10K CF (test): dv +0.56, dvW2 +1.30, seq7 +2.50, seq8 +3.17.

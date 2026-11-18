@@ -16,7 +16,7 @@
 - TEST (selected on dev): top1 69.78/54.09/11.04, dv 71.22/54.98/11.19, seq7 73.57/58.51/13.21 (+3.457), seq8 74.97/60.42/13.90 (+4.791).
 - Generalisation (settings from dev): SPair-U test (no perm → no flip-ensemble): dv +0.51, dvW2 +0.50, seq7 +0.99, seq8 +1.45.
   PF-Pascal (PCK .10/.05/.15 @840px): top1 86.50/73.57/91.30, dv 89.44/75.93/93.70, seq7 90.31/77.38/94.12, seq8 91.59/78.33/95.44.
-  AP-10K CF: cache building (prepare_gen.py ap10kcf tlr) then scripts/queue_gen.sh ap10kcf.
+  AP-10K CF test: top1 53.30/36.26/7.10, dv +0.56, dvW2 +1.30, seq7 +2.50 (55.78/39.05/9.33), seq8 +3.17 (56.59/39.90/9.67).
 - Running: sweep SD_W (block reweighting) on seq7; transfer of seq8 (cleandift/diysc val).
 - Next: (1) analysis step (seq ~10): errors of seq7/seq8 by type & category; (2) daily report 2026-11-19 ~04:00 UTC
   (+ git push); (3) test split + SPair-U / AP-10K generalization for finalists (day 4-5); (4) more training-free ideas:

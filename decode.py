@@ -30,6 +30,8 @@ WIN, BETA, REF_ENS = 2, 0.03, 0.5
 REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + separable parabola sub-patch offset | 'mix'
 SWAP_T = -1.0    # mirror-pair orientation test: swap the two predictions of a mirror pair if cos < -SWAP_T (-1 = off)
 K_PEAK, R_NMS, K_TOP = 0, 1, 0   # peak pool: K_PEAK local maxima (NMS radius R_NMS) of the forward row + top K_TOP patches
+PROF = 0.0       # relational-profile correlation weight
+RR_FL = 0.0      # reverse-rank penalty in the other arm
 FL_ALIGN = 0     # snap radius (patches) of the other-arm keypoint location (0 = off)
 MU_ADAPT = 0.0   # >0: scale mu by min(1, inlier_ratio / MU_ADAPT) of the consensus fit
 CONS_ITER = 0    # extra consensus passes using the full score as the RANSAC unary
@@ -73,11 +75,38 @@ def decode_arm(pair, a):
     if WFL > 0 or LFL > 0:
         fe, fl_map = flip_ensemble(pair, a, st, pid, d_cyc, topk_sim)
         score = score + fe
+    if PROF > 0:   # relational profile: candidate's similarities to the OTHER queries vs the query's self-similarities
+        vi = st.valid_kpt_indices
+        Mk = vi.numel()
+        valid_k = A['kp_valid'][vi]
+        if int(valid_k.sum()) >= 3:
+            Rj = st.sim_kpts[:, topk_idx.reshape(-1)].view(Mk, Mk, -1)          # [j, i, k]
+            qd = A['desc'][st.idx_valid]
+            Ss = qd @ qd.t()                                                    # [i, j]
+            w = (valid_k.view(-1, 1) & valid_k.view(1, -1) & ~torch.eye(Mk, dtype=torch.bool, device=st.device)).float()  # [i, j]
+            T = Rj.permute(1, 2, 0)                                             # [i, k, j]
+            wn = w.sum(1).clamp(min=1).view(Mk, 1, 1)
+            Tm = (T * w.unsqueeze(1)).sum(-1, keepdim=True) / wn
+            Sm = (Ss * w).sum(-1, keepdim=True) / w.sum(1, keepdim=True).clamp(min=1)
+            Tc, Sc = (T - Tm) * w.unsqueeze(1), ((Ss - Sm) * w).unsqueeze(1)
+            corr = (Tc * Sc).sum(-1) / (Tc.norm(dim=-1) * Sc.norm(dim=-1)).clamp(min=1e-6)
+            score = score + PROF * corr
     if RR > 0:
         S = st.sim_valid
         cols = S[:, topk_idx.reshape(-1)].view(S.shape[0], *topk_idx.shape)
         rr = (cols > torch.gather(own_rows, 1, topk_idx).unsqueeze(0)).sum(0).float()
         score = score - RR * torch.log1p(rr)
+        if RR_FL > 0:   # reverse rank of the other-arm query among the other arm's (masked) source patches
+            lo, ok = other_arm_kp(pair, a, st)
+            O = pair['src'][1 - a]
+            om = O['mask'].clone()
+            om[lo[ok]] = True
+            ov = torch.nonzero(om, as_tuple=True)[0]
+            tc = pair['trg']['desc'][pid.reshape(-1)]
+            colsf = (O['desc'][ov] @ tc.t()).view(ov.numel(), *pid.shape)
+            sq = (O['desc'][lo].unsqueeze(1) * tc.view(*pid.shape, -1)).sum(-1)
+            rf = (colsf > sq.unsqueeze(0)).sum(0).float()
+            score = score - RR_FL * torch.where(ok.unsqueeze(1), torch.log1p(rf), torch.log1p(rr))
     if MU > 0:
         valid = A['kp_valid'][st.valid_kpt_indices]
         g = torch.Generator(device=st.device)
@@ -256,7 +285,8 @@ def decode_arm_t3(pair, a):
         _T3[T3_MODEL] = t3.load_model(T3_MODEL)
     N = pair['src'][a]['kp'].numel()
     out = torch.zeros(N, 2, device='cuda')
-    st, o = FT.arm_candidates(pair, a, extra=_T3[T3_MODEL].mu.numel() > len(FT.FEAT_NAMES))
+    nf = _T3[T3_MODEL].mu.numel()
+    st, o = FT.arm_candidates(pair, a, extra={len(FT.FEAT_NAMES): 0, len(FT.FEAT_NAMES2): 1, len(FT.FEAT_NAMES3): 2}[nf])
     if o is None:
         return out
     s = _T3[T3_MODEL](o['F'], o['in_pool'])
