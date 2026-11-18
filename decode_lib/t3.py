@@ -18,9 +18,10 @@ class Reranker(nn.Module):
         self.out = nn.Sequential(nn.Linear(2 * h, h), nn.ReLU(), nn.Linear(h, 1))
         self.register_buffer('mu', torch.zeros(nf))
         self.register_buffer('sd', torch.ones(nf))
+        self.register_buffer('fmask', torch.ones(nf))      # 0 = feature dropped (ablation)
 
     def forward(self, F, pool):
-        x = (F - self.mu) / self.sd
+        x = (F - self.mu) / self.sd * self.fmask
         h = self.inp(x)                                                    # [B,K,h]
         m = pool.float().unsqueeze(-1)
         ctx = (h * m).sum(1, keepdim=True) / m.sum(1, keepdim=True).clamp(min=1)
@@ -51,7 +52,7 @@ def evaluate(model, F, pool, err, dev='cuda'):
     return np.array([100 * (e <= t).mean() for t in THRS]), b
 
 
-def train(train_path, out_path, epochs=30, eval_path=None, seed=0, h=64, lr=2e-3, wd=1e-4, base_w=None):
+def train(train_path, out_path, epochs=30, eval_path=None, seed=0, h=64, lr=2e-3, wd=1e-4, base_w=None, drop=()):
     torch.manual_seed(seed)
     dev = 'cuda'
     d, F, pool, g = load_table(train_path)
@@ -60,6 +61,8 @@ def train(train_path, out_path, epochs=30, eval_path=None, seed=0, h=64, lr=2e-3
     Fm = F[pool]
     model.mu.copy_(Fm.mean(0).to(dev))
     model.sd.copy_(Fm.std(0).clamp(min=1e-3).to(dev))
+    for n_ in drop:
+        model.fmask[names.index(n_)] = 0
     opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=wd)
     n = len(F)
     bs = 1024
@@ -95,7 +98,10 @@ def train(train_path, out_path, epochs=30, eval_path=None, seed=0, h=64, lr=2e-3
 def load_model(path, dev='cuda'):
     ck = torch.load(path, map_location=dev)
     m = Reranker(ck['nf'], ck['h']).to(dev)
-    m.load_state_dict(ck['state'])
+    st = ck['state']
+    if 'fmask' not in st:
+        st = dict(st, fmask=torch.ones(ck['nf'], device=dev))
+    m.load_state_dict(st)
     m.eval()
     return m
 

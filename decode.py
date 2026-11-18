@@ -127,6 +127,16 @@ def decode_arm(pair, a):
     score = score.masked_fill(~in_pool, -1e9)
     best = score.argmax(1)
     bp = pid.gather(1, best[:, None])[:, 0]
+    if _STATS is not None:   # analysis hook: pair-level evidence for this arm (source-side info only)
+        vk = A['kp_valid'][st.valid_kpt_indices]
+        rr0 = torch.arange(best.numel(), device=st.device)
+        sc = score[rr0, best][vk]
+        dcb = d_cyc[rr0, best][vk]
+        _STATS.append(dict(arm=a, n=int(vk.sum()), score=float(sc.mean()) if sc.numel() else 0.0,
+                           sim=float(topk_sim[rr0, best][vk].mean()) if sc.numel() else 0.0,
+                           mnn=float((dcb <= 1).float().mean()) if sc.numel() else 0.0,
+                           dcyc=float(dcb.mean()) if sc.numel() else 0.0,
+                           cons=float((info['n_inl'] / max(info['n'], 1)) if (MU > 0 and info.get('ok')) else 0.0)))
     s2d = st.full_sim_2d
     if REF_ENS > 0:
         s2d = (s2d + REF_ENS * fl_map) / (1 + REF_ENS)
@@ -304,7 +314,7 @@ def flip_ensemble(pair, a, st, pid, d_cyc, topk_sim):
     return WFL * sfl - LFL * dfl / nP, fl_map
 
 
-T3_MODEL = 'runs/t3_models/x2_full_60_128.pt'   # '' = training-free (seq 5); else path of a decode_lib.t3 model (track T3, trained on SPair trn_train)
+T3_MODEL = ''   # '' = training-free (seq 5); else path of a decode_lib.t3 model (track T3, trained on SPair trn_train)
 _T3 = {}
 
 
@@ -336,9 +346,33 @@ def reweight(pair, w):
     return dict(pair, src=src, trg=dict(pair['trg'], desc=f(pair['trg']['desc'])))
 
 
+_STATS = None    # analysis hook (list) — set by scripts/arm_stats.py
+ARM_PAIR = True  # seq 11: pair-level arm for every keypoint (instead of the per-keypoint vis_flip rule)
+FORCE_ARM = -1   # analysis: 0 / 1 decode every keypoint in that arm (arm-1 keypoints rebuilt from source info only)
+
+
+def force_arm(pair, a):
+    N = pair['arm_of_kpt'].numel()
+    if a == 0:
+        return dict(pair, arm_of_kpt=torch.zeros(N, dtype=torch.long, device='cuda'))
+    nP = pair['nP']
+    k0, v0 = pair['src'][0]['kp'], pair['src'][0]['kp_valid']
+    j = pair['perm']
+    jc = j.clamp(min=0)
+    ok = v0[jc] & (j >= 0)
+    kp1 = torch.where(ok, (k0[jc] // nP) * nP + (nP - 1 - k0[jc] % nP), torch.zeros_like(k0))
+    src1 = dict(pair['src'][1], kp=kp1, kp_valid=ok)
+    arm = torch.where(ok, torch.ones(N, dtype=torch.long, device='cuda'), torch.zeros(N, dtype=torch.long, device='cuda'))
+    return dict(pair, src=[pair['src'][0], src1], arm_of_kpt=arm)
+
+
 def decode(pair):
     if SD_W != 1.0:
         pair = reweight(pair, SD_W)
+    if FORCE_ARM >= 0:
+        pair = force_arm(pair, FORCE_ARM)
+    elif ARM_PAIR:   # decode ALL keypoints in the arm chosen for the pair (arm-1 queries rebuilt from source info)
+        pair = force_arm(pair, 1 if bool((pair['arm_of_kpt'] == 1).any()) else 0)
     arm = pair['arm_of_kpt']
     f = decode_arm_t3 if T3_MODEL else decode_arm
     pred = f(pair, 0)
