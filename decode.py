@@ -36,6 +36,7 @@ TTA_STEPS, TTA_REG = 20, 0.0   # per-pair test-time channel re-weighting (label-
 TTA_LR, TTA_TAU, TTA_ARM, TTA_BOTH, TTA_OBJ = 0.05, 0.05, 0, False, 'dsmax'   # TTA_ARM -1 = pair's arm
 PARTNER_EST, PARTNER_FORCE = 0.0, False   # estimate unknown mirror partners (exclusion radius around the self-mirror)
 TTA_NOMASK = False   # TTA objective over all patches (not only the dilated masks)
+TTA_ENS_OBJ = ''   # second TTA objective to ensemble with ('' = off)
 TTA_MIX = 1.0    # <1: mix original and adapted similarities
 TTA_BLOCKNORM = False   # TTA: re-normalise SD and DINO blocks separately after weighting
 TTA_SEM = 0.0    # TTA: source-side semantic contrast weight (annotated kps + mirror permutation)
@@ -491,6 +492,12 @@ def decode(pair):
         with torch.enable_grad():
             ta = (1 if bool((pair['arm_of_kpt'] == 1).any()) else 0) if TTA_ARM < 0 else TTA_ARM
             pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, both=TTA_BOTH, obj=TTA_OBJ, rank=TTA_RANK, groups=TTA_GROUPS, sep=TTA_SEP, hand=TTA_HAND, qw=TTA_QW, init=init, sem=TTA_SEM, blocknorm=TTA_BLOCKNORM, nomask=TTA_NOMASK)
+        if TTA_ENS_OBJ:   # ensemble with a second TTA solution (different objective): concatenated half-weighted descs
+            with torch.enable_grad():
+                p2 = adapt_pair(orig, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, obj=TTA_ENS_OBJ)
+            cat2 = lambda d0, d1: torch.cat([d0 * 0.5 ** 0.5, d1 * 0.5 ** 0.5], 1)
+            pair = dict(pair, src=[dict(S1, desc=cat2(S1['desc'], S2['desc'])) for S1, S2 in zip(pair['src'], p2['src'])],
+                        trg=dict(pair['trg'], desc=cat2(pair['trg']['desc'], p2['trg']['desc'])))
         if TTA_MIX < 1.0:   # similarity = (1-m) S_orig + m S_tta via concatenated scaled descriptors
             m = TTA_MIX
             cat = lambda d0, d1: torch.cat([d0 * (1 - m) ** 0.5, d1 * m ** 0.5], 1)

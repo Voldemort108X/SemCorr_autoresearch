@@ -121,3 +121,5 @@
 - seq17 finalist: TEST +4.318, CleanDIFT +4.519, DIY-SC +2.470, SPair-U +1.674, Pascal +3.825, AP-10K +3.562 (seq15: +4.378/+4.593/+2.355/+1.789/+3.977/+3.472) → equivalent within noise.
 - TTA prior weights by block (mean w): s3 1.02, s4 0.78, s5 0.62, DINO 1.10 → TTA mainly down-weights the coarse SD layers (s4/s5) and up-weights DINO; per-pair adaptation adds the rest.
 - TTA_NOMASK (objective over all patches) +3.435 vs +4.366 (subset): masks matter. (First attempt silently did not apply — replacement miss — rerun after fix.)
+- Full-dev TTA confirmation (default 20 steps τ.05 dsmax = +4.712): 10 steps +4.496, 30 steps +4.359, τ .1 +4.101, soft-cycle objective +4.491 → default confirmed.
+- TTA objective dsmax+cyc combined: +4.485 (negative).

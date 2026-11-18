@@ -68,6 +68,10 @@ def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj=
             elif obj == 'cyc':      # soft cycle: source -> target -> source returns to itself
                 P1, P2 = torch.softmax(S, 1), torch.softmax(S.t(), 1)
                 loss = loss - torch.diagonal(P1 @ P2).clamp(min=1e-9).log().mean() * 0.1
+            elif obj == 'both':
+                P = torch.softmax(S, 1) * torch.softmax(S, 0)
+                P1, P2 = torch.softmax(S, 1), torch.softmax(S.t(), 1)
+                loss = loss - P.max(1)[0].mean() - P.max(0)[0].mean() - torch.diagonal(P1 @ P2).clamp(min=1e-9).log().mean() * 0.1
         if sem > 0:
             a_ = tf(Qi, w)
             sp, sn1, sn2 = (a_ * tf(Vpos, w)).sum(1), (a_ * tf(Uneg, w)).sum(1), (a_ * tf(Qj, w)).sum(1)

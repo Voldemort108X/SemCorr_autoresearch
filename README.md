@@ -29,8 +29,8 @@ python scripts/dump_pools.py tlr dev                       # per-candidate cue t
 ```
 
 ## Current best
-- Training-free, seq 14 (commit fa6e150): dev +3.823 vs top1 (dv +0.777); val +3.583 (dv +0.891).
-  Val per-kpt PCK@.10/.05/.01 72.30/57.14/12.10 (top1 68.33/52.39/10.08, dv 69.84/53.38/10.25).
-- Learned re-ranker (T3, trained on SPair trn_train), seq 9 (commit 3d51e99): val +4.972, TEST +5.230
-  (75.50/61.05/14.05 vs top1 69.78/54.09/11.04, dv 71.22/54.98/11.19).
-- Tables: results.tsv; analyses: journal/analysis_*.md; resume point: journal/STATE.md. Selection on dev only.
+- Training-free, seq 17 (commit bd80053; `OVR="T3_MODEL=" bash scripts/run.sh ...`): dev +4.712 vs top1 (dv +0.777);
+  val +4.563; TEST 74.08/59.64/14.15 (+4.318; top1 69.78/54.09/11.04, dv 71.22/54.98/11.19). Includes per-pair
+  test-time channel re-weighting (decode_lib/tta.py). seq 15 (same + REF_CYC) is equivalent (test +4.378).
+- Learned (T3, trained on SPair trn_train), seq 16 (commit 0003221; decode.py default): val +6.090, TEST 76.06/62.00/14.83 (+5.988).
+- Tables: results.tsv, reports/tables_test.md; analyses: journal/analysis_*.md; resume point: journal/STATE.md.
