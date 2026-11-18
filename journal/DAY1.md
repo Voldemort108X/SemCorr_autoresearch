@@ -123,3 +123,5 @@
 - TTA_NOMASK (objective over all patches) +3.435 vs +4.366 (subset): masks matter. (First attempt silently did not apply — replacement miss — rerun after fix.)
 - Full-dev TTA confirmation (default 20 steps τ.05 dsmax = +4.712): 10 steps +4.496, 30 steps +4.359, τ .1 +4.101, soft-cycle objective +4.491 → default confirmed.
 - TTA objective dsmax+cyc combined: +4.485 (negative).
+- TTA ensemble (dsmax + cyc solutions, concatenated): +4.750 vs +4.712 (noise) at 2x TTA cost → not kept.
+- Re-tuning under TTA (full dev, seq17 = +4.712): NOM_ENS 1 +4.729, REF_ENS 1 +4.786, WIN 3 +4.425, β .02 +4.409, λ 1 +4.703, μ 1 +4.696 → all within noise or worse; seq17 is locally optimal.
