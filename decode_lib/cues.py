@@ -9,7 +9,7 @@ def arm_state(pair, a):
     return C.PairState(A['desc'], pair['trg']['desc'], A['kp'], A['mask'], pair['trg']['mask'])
 
 
-def candidate_cues(st, K=30, mls_sigmas=(4.0, 8.0, 16.0), seed=0, other_desc=None, trg_desc=None, kp_valid=None):
+def candidate_cues(st, K=30, mls_sigmas=(4.0, 8.0, 16.0), seed=0, other_desc=None, trg_desc=None, kp_valid=None, other=None):
     """Returns dict of [M, K] tensors + 'pid' [M, K] (target patch ids) + 'in_pool' (Deja Vu's top-p pool)."""
     nP = st.num_patches
     _, _, _, cutoff_k = C.nominate(st, max_k=K)
@@ -42,6 +42,40 @@ def candidate_cues(st, K=30, mls_sigmas=(4.0, 8.0, 16.0), seed=0, other_desc=Non
         smir = (tc * qm.unsqueeze(1)).sum(-1)
         out['sim_mir'] = smir
         out['hand'] = topk_sim - smir
+    # flip-ensemble: the same semantic keypoint seen in the other arm (mirror image of its counterpart)
+    if other is not None:
+        # semantic keypoint i in the other arm: arm1 main -> arm0 kp[i]; arm0 main -> mirrored col of arm0 kp[perm[i]]
+        vi = st.valid_kpt_indices
+        k0, v0 = other['kp0'], other['kp0_valid']
+        if other['main_arm'] == 1:
+            lo, ok = k0[vi], v0[vi]
+        else:
+            j = other['perm'][vi]
+            lo = (k0[j] // nP) * nP + (nP - 1 - k0[j] % nP)
+            ok = v0[j]
+        od = other['desc']
+        tc = trg_desc[pid.reshape(-1)]                                      # [M*K,D]
+        sfl = (od[lo].unsqueeze(1) * tc.view(*pid.shape, -1)).sum(-1)       # [M,K]
+        omask = other['mask'].clone()
+        omask[lo[ok]] = True
+        ov = torch.nonzero(omask, as_tuple=True)[0]
+        bn = ov[(od[ov] @ tc.t()).argmax(0)].view(*pid.shape)               # back-NN in the other arm
+        lxy = geo.pid_xy(lo, nP)
+        dfl = (geo.pid_xy(bn, nP) - lxy.unsqueeze(1)).norm(dim=-1)
+        okk = ok.unsqueeze(1).expand_as(sfl)
+        out['fl_ok'] = okk.float()
+        out['sim_fl'] = torch.where(okk, sfl, topk_sim)
+        out['d_cyc_fl'] = torch.where(okk, dfl, d_cyc)
+    # per-block similarities (TLR-style descriptors: [SD 3200 | DINO 768], each block unit norm)
+    sd_ = st._src_desc_full
+    if sd_.shape[1] == 3968 and trg_desc is not None:
+        tc = trg_desc[pid.reshape(-1)].view(*pid.shape, -1)
+        qd = sd_[st.idx_valid]
+        for nm, sl in (('sd', slice(0, 3200)), ('dino', slice(3200, 3968))):
+            out[f'sim_{nm}'] = 2 * (qd[:, sl].unsqueeze(1) * tc[..., sl]).sum(-1)
+            Sb = st.img1_valid[:, sl] @ tc[..., sl].reshape(-1, tc[..., sl].shape[-1]).t()   # [Ps, M*K]
+            bn = st.src_valid_idx[Sb.argmax(0)].view(*pid.shape)
+            out[f'd_cyc_{nm}'] = (geo.pid_xy(bn, nP) - qxy.unsqueeze(1)).norm(dim=-1)
     # consensus over the keypoints' pools (pair-level transform)
     from decode_lib.consensus import consensus
     valid = kp_valid[st.valid_kpt_indices] if kp_valid is not None else torch.ones(st.M, dtype=torch.bool, device=st.device)

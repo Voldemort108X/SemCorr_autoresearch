@@ -8,3 +8,12 @@
 [prepare] tlr cat feat=True splits=['val', 'dev', 'test'] 137s
 [prepare] tlr chair feat=True splits=['val', 'dev', 'test'] 122s
 [prepare] tlr cow feat=True splits=['val', 'dev', 'test'] 141s
+[prepare] tlr dog feat=True splits=['val', 'dev', 'test'] 126s
+[prepare] tlr horse feat=True splits=['val', 'dev', 'test'] 120s
+[prepare] tlr motorbike feat=True splits=['val', 'dev', 'test'] 131s
+[prepare] tlr person feat=True splits=['val', 'dev', 'test'] 126s
+[prepare] tlr pottedplant feat=True splits=['val', 'dev', 'test'] 143s
+[prepare] tlr sheep feat=True splits=['val', 'dev', 'test'] 144s
+[prepare] tlr train feat=True splits=['val', 'dev', 'test'] 140s
+[prepare] tlr tvmonitor feat=True splits=['val', 'dev', 'test'] 146s
+[prepare] done

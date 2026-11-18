@@ -37,7 +37,7 @@ with torch.no_grad():
                 take = ((arm[vi] == a) & torch.from_numpy(vis).cuda()[vi])
                 if take.sum() == 0:
                     continue
-                cu = Q.candidate_cues(st, K, other_desc=pair['src'][1 - a]['desc'], trg_desc=pair['trg']['desc'], kp_valid=pair['src'][a]['kp_valid'])
+                cu = Q.candidate_cues(st, K, other_desc=pair['src'][1 - a]['desc'], trg_desc=pair['trg']['desc'], kp_valid=pair['src'][a]['kp_valid'], other=dict(desc=pair['src'][1 - a]['desc'], mask=pair['src'][1 - a]['mask'], kp0=pair['src'][0]['kp'], kp0_valid=pair['src'][0]['kp_valid'], perm=pair['perm'], main_arm=a))
                 pid = cu['pid']
                 Kc = pid.shape[1]
                 s2 = st.full_sim_2d.unsqueeze(1).expand(-1, Kc, -1, -1).reshape(-1, C.NP, C.NP)

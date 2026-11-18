@@ -1,1 +1,6 @@
 seq	commit	dev	d10	d05	d01	pck10	pck05	pck01	sec	track	status	description
+ref-top1	2e2b05f	0.000	0.00	0.00	0.00	68.19	52.06	9.66	304	ref	ref	top-1 NN (masked) + window soft-argmax
+ref-dv	2e2b05f	0.777	1.38	0.87	0.08	69.58	52.93	9.74	304	ref	ref	Deja Vu lambda 0.5 (paper)
+ref-or5	2e2b05f	4.896	7.69	5.80	1.19	75.89	57.86	10.85	304	ref	ref	oracle top-5 by S (same refinement)
+ref-or10	2e2b05f	7.810	11.96	9.47	2.00	80.15	61.53	11.66	304	ref	ref	oracle top-10
+ref-or30	2e2b05f	13.676	18.96	17.25	4.82	87.16	69.31	14.47	304	ref	ref	oracle top-30

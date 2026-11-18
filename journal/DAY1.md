@@ -9,3 +9,12 @@
 - Note: dev bbox = target bbox (the original loader appends src+trg thresholds for 'trn'; fixed in the vendored copy).
 - Note: the decoder gets `arm_of_kpt` (frozen adaptive flip; it uses mutual visibility, as the original code does) but not
   the evaluated-keypoint mask; joint decoders use the source-visible keypoints of each arm as the query set.
+
+## Loop
+- Full-dev failure analysis of dv (cache/tlr/dev/pools.npz): wrong@.10 = 30.4 %; 57.8 % of those have a correct
+  candidate in the pool. Wrong predictions land on: mirror kp 21.6 %, other kp 41.9 %, near-miss 18.4 %, far 18.1 %.
+- Offline screen (dev, single cues added to dv): consensus-RANSAC residual (cap 5) +1.14, MNN-affine residual (cap 5)
+  +1.04, soft-cycle +0.98, flip-ensemble similarity +1.17, ctx2 +0.95, keypoint MRF/ICM +1.15; MLS/handedness ≈ dv.
+  Pointwise GBM over all cues (2-fold on dev) only +1.02 → the cues carry little extra information.
+- seq 1 hypothesis [T2]: adding μ·min(resid to the pair-level consensus similarity transform, 5)/w (μ 0.5) to Déjà Vu
+  fixes part of the mirror / other-kp swaps → dev ≈ +1.1 (offline +1.136).

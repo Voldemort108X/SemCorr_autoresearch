@@ -25,7 +25,7 @@ def _fit_aff(X, Y, w=None):
         w = torch.ones(X.shape[:-1], device=X.device)
     W = w.unsqueeze(-1)
     A = (Xh * W).transpose(-1, -2) @ Xh + torch.eye(3, device=X.device) * 1e-4
-    return torch.linalg.solve(A, (Xh * W).transpose(-1, -2) @ Y)
+    return torch.linalg.pinv(A) @ ((Xh * W).transpose(-1, -2) @ Y)
 
 
 def _apply(B, X):

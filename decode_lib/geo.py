@@ -25,7 +25,7 @@ def fit_affine_wls(X, Y, w):
     XtX = (Xh * W).transpose(-1, -2) @ Xh
     XtY = (Xh * W).transpose(-1, -2) @ Y
     eye = torch.eye(3, device=X.device) * 1e-3
-    return torch.linalg.solve(XtX + eye, XtY)
+    return torch.linalg.pinv(XtX + eye) @ XtY
 
 
 def apply_affine(B, X):
