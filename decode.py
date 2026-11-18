@@ -24,9 +24,10 @@ from decode_lib.consensus import consensus
 
 LAM = 0.5
 MU, CAP, THR, MODEL = 0.5, 5.0, 6.0, 'sim'
-WFL, LFL = 0.5, 0.25          # flip-ensemble: weight of the other-arm similarity and of its cycle distance
+WFL, LFL = 0.0, 0.25          # flip-ensemble: weight of the other-arm similarity and of its cycle distance
 K = 30
-WIN, BETA, REF_ENS = 5, 0.01, 0.5   # refinement: window, softmax beta, weight of the other-arm map in the refinement
+WIN, BETA, REF_ENS = 5, 0.01, 0.5
+NOM_ENS = 0.75    # weight of the other-arm row in the forward row used for nomination + top-k similarity   # refinement: window, softmax beta, weight of the other-arm map in the refinement
 
 
 def decode_arm(pair, a):
@@ -37,6 +38,13 @@ def decode_arm(pair, a):
     if st.M == 0:
         return out
     nP = st.num_patches
+    if NOM_ENS > 0:
+        lo, ok = other_arm_kp(pair, a, st)
+        O = pair['src'][1 - a]
+        fr = O['desc'][lo] @ st.img2_valid.t()                              # [M, Pt]
+        row = torch.where(ok.unsqueeze(1), (st.sim_kpts + NOM_ENS * fr) / (1 + NOM_ENS), st.sim_kpts)
+        st.sim_kpts = row
+        st._sorted_cache = {}
     _, _, _, cutoff_k = C.nominate(st, max_k=K)
     si, _ = st.sorted_by_temperature(0.1)
     topk_idx = si[:, :min(K, si.shape[1])]
@@ -69,20 +77,23 @@ def decode_arm(pair, a):
     return out
 
 
+def other_arm_kp(pair, a, st):
+    nP = st.num_patches
+    vi = st.valid_kpt_indices
+    k0, v0 = pair['src'][0]['kp'], pair['src'][0]['kp_valid']
+    if a == 1:
+        return k0[vi], v0[vi]
+    j = pair['perm'][vi]
+    return (k0[j] // nP) * nP + (nP - 1 - k0[j] % nP), v0[j]
+
+
 def flip_ensemble(pair, a, st, pid, d_cyc, topk_sim):
     """The same semantic keypoint seen in the other arm: for arm 1 -> arm-0 kp[i]; for arm 0 -> the mirrored column of
     arm-0 kp[perm[i]] (the counterpart part, mirrored, looks like part i). Adds WFL * S_other(l', m) and
     -LFL * d_cyc_other / w (back-NN of the candidate in the other arm vs l'). Falls back to the own-arm values when the
     counterpart is not annotated."""
     nP = st.num_patches
-    vi = st.valid_kpt_indices
-    k0, v0 = pair['src'][0]['kp'], pair['src'][0]['kp_valid']
-    if a == 1:
-        lo, ok = k0[vi], v0[vi]
-    else:
-        j = pair['perm'][vi]
-        lo = (k0[j] // nP) * nP + (nP - 1 - k0[j] % nP)
-        ok = v0[j]
+    lo, ok = other_arm_kp(pair, a, st)
     O = pair['src'][1 - a]
     tc = pair['trg']['desc'][pid.reshape(-1)]
     sfl = (O['desc'][lo].unsqueeze(1) * tc.view(*pid.shape, -1)).sum(-1)

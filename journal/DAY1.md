@@ -20,3 +20,4 @@
   fixes part of the mirror / other-kp swaps → dev ≈ +1.1 (offline +1.136).
 - seq 2 hypothesis [T1/T4]: flip-ensemble — score the candidate also against the same semantic keypoint in the other source arm (mirrored counterpart) + its cycle there (WFL 0.5, LFL 0.25) → dev ≈ +1.37 (offline).
 - seq 3 hypothesis [T4]: refine with the flip-ensembled similarity map (own + 0.5·other-arm map of the same semantic kp) → better localisation at all thresholds (sweep: dev +2.04).
+- seq 4 hypothesis [T4]: flip-ensembled forward row (own + 0.75·other-arm row)/1.75 for nomination and the similarity term (replaces WFL) → better pool + choice (sweep +2.19).
