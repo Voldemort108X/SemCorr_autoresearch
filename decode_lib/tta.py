@@ -4,10 +4,23 @@ import torch
 import torch.nn.functional as F
 
 
-def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False, hand=0.0):
+def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False, hand=0.0, qw=0.0, init=None, return_w=False, sem=0.0):
     A = pair['src'][a]
     X = A['desc'][A['mask']]
     X2 = pair['src'][1 - a]['desc'][pair['src'][1 - a]['mask']]
+    if sem > 0:   # source-side semantic contrast from the annotated keypoints + mirror permutation (no target labels)
+        nP = pair['nP']
+        k0, v0, perm = pair['src'][0]['kp'], pair['src'][0]['kp_valid'], pair['perm']
+        jc = perm.clamp(min=0)
+        okp = v0 & (perm >= 0) & (perm != torch.arange(perm.numel(), device=perm.device)) & v0[jc]
+        if int(okp.sum()) >= 2:
+            li, lj = k0[okp], k0[jc[okp]]
+            mi = (li // nP) * nP + (nP - 1 - li % nP)
+            mj = (lj // nP) * nP + (nP - 1 - lj % nP)
+            D0, D1 = pair['src'][0]['desc'], pair['src'][1]['desc']
+            Qi, Vpos, Uneg, Qj = D0[li], D1[mj], D1[mi], D0[lj]
+        else:
+            sem = 0.0
     if hand != 0.0:
         nP = pair['nP']
         pidx = torch.nonzero(A['mask'], as_tuple=True)[0]
@@ -19,7 +32,8 @@ def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj=
     D = X.shape[1]
     G = groups if groups > 0 else D
     gidx = (torch.arange(D, device=X.device) * G // D)
-    th = torch.zeros(G, device=X.device, requires_grad=True)
+    th = torch.zeros(G, device=X.device) if init is None else init.clone().to(X.device)
+    th.requires_grad_(True)
     th_t = torch.zeros(G, device=X.device, requires_grad=True)
     params = [th, th_t] if sep else [th]
     if rank > 0:
@@ -52,11 +66,24 @@ def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj=
             elif obj == 'cyc':      # soft cycle: source -> target -> source returns to itself
                 P1, P2 = torch.softmax(S, 1), torch.softmax(S.t(), 1)
                 loss = loss - torch.diagonal(P1 @ P2).clamp(min=1e-9).log().mean() * 0.1
+        if sem > 0:
+            a_ = tf(Qi, w)
+            sp, sn1, sn2 = (a_ * tf(Vpos, w)).sum(1), (a_ * tf(Uneg, w)).sum(1), (a_ * tf(Qj, w)).sum(1)
+            logits = torch.stack([sp, sn1, sn2], 1) / 0.05
+            loss = loss + sem * torch.nn.functional.cross_entropy(logits, torch.zeros(len(sp), dtype=torch.long, device=sp.device))
+        if qw > 0:        # extra confidence term on the query keypoint rows (dual-softmax restricted to the queries)
+            Q = tf(A['desc'][A['kp'][A['kp_valid']]], w)
+            if Q.shape[0] > 0:
+                Sq = Q @ Yw.t() / tau
+                Pq = torch.softmax(Sq, 1) * torch.softmax(torch.cat([S, Sq], 0), 0)[-Q.shape[0]:]
+                loss = loss - qw * Pq.max(1)[0].mean()
         opt.zero_grad()
         loss.backward()
         opt.step()
     with torch.no_grad():
         w = F.softplus(th + 0.5413)[gidx]
         wt = F.softplus(th_t + 0.5413)[gidx] if sep else w
+        if return_w:
+            return th.detach()
         src = [dict(S_, desc=tf(S_['desc'], w)) for S_ in pair['src']]
         return dict(pair, src=src, trg=dict(pair['trg'], desc=tf(pair['trg']['desc'], wt)))

@@ -111,3 +111,8 @@
   (−0.19); −cycle-penalised refinement (REF_CYC 0) +4.712 (0.00) → with TTA, REF_CYC no longer helps.
 - seq 17 hypothesis (simplification): seq15 without REF_CYC — equal dev, simpler.
 - seq 17 → kept by the simplicity rule: dev +4.712 (= seq15), val +4.563 (seq15 +4.657, −0.09 within noise).
+- Error types (dev, % of kpts): seq17 TF+TTA wrong 27.08 | mirror 7.05 other 11.17 near 4.71 far 4.14; seq16 T3+TTA 25.16 | 6.50 / 10.85 / 4.22 / 3.58 → TTA does not touch mirror errors either.
+- TTA_QW (extra query-row confidence term) 1/3 → +2.977/+2.838 (subset; base +4.366): strongly negative.
+- TTA prior (θ averaged over 720 unlabeled trn_train pairs, runs/tta_prior.npy): fixed global weights, no per-pair steps +3.848 (subset; no TTA ≈ +3.39, per-pair TTA +4.366) → about half of the TTA gain is a global channel re-weighting; prior as init for per-pair TTA +4.294 (no gain).
+- PARTNER_EST (estimate the mirror partner from features, excluding the self-mirror within r; forced on dev to simulate perm-free data) r3 +1.385, r6 +1.445 vs no flip-ensemble +3.277, true perm +4.366 (subset) → estimated partners are wrong and harmful; the flip-ensemble needs the annotated permutation.
+- TTA_SEM (source-side semantic contrast in the TTA: query vs its flipped semantic view (+) vs self-mirror / own-arm partner (−)) .1/.5/2 → +2.703/+2.462/+2.440 (subset; base +4.366): strongly negative (few views → over-specialised weights).

@@ -34,6 +34,10 @@ DENSE_MU, DENSE_R = 0.0, 6.0   # dense-flow residual weight / source radius (pat
 REF_CYC, REF_SIG = 0.0, 0.0   # refinement on sim - REF_CYC*d_cyc/w ; Gaussian window prior sigma (patches)
 TTA_STEPS, TTA_REG = 20, 0.0   # per-pair test-time channel re-weighting (label-free)
 TTA_LR, TTA_TAU, TTA_ARM, TTA_BOTH, TTA_OBJ = 0.05, 0.05, 0, False, 'dsmax'   # TTA_ARM -1 = pair's arm
+PARTNER_EST, PARTNER_FORCE = 0.0, False   # estimate unknown mirror partners (exclusion radius around the self-mirror)
+TTA_SEM = 0.0    # TTA: source-side semantic contrast weight (annotated kps + mirror permutation)
+TTA_PRIOR = ''   # path of averaged TTA weights (unsupervised, from trn pairs): fixed (TTA_STEPS 0) or init
+TTA_QW = 0.0     # TTA: extra weight on the query keypoint rows' mutual confidence
 TTA_HAND = 0.0   # TTA: weight of the mirror-dissimilarity (handedness) term
 TTA_SEP = False  # separate TTA weights for source and target
 TTA_GROUPS = 0   # TTA weights shared within contiguous channel groups (0 = per channel)
@@ -342,6 +346,25 @@ def other_arm_kp(pair, a, st):
         j = pair['perm'][vi]                      # -1 = mirror partner unknown (datasets without a flip permutation)
         jc = j.clamp(min=0)
         lo, ok = (k0[jc] // nP) * nP + (nP - 1 - k0[jc] % nP), v0[jc] & (j >= 0)
+    if PARTNER_EST > 0:   # estimate the other-arm view where the mirror partner is unknown (or always, if forced)
+        need = ~ok if not PARTNER_FORCE else torch.ones_like(ok)
+        if bool(need.any()):
+            O = pair['src'][1 - a]
+            q = pair['src'][a]['desc'][st.idx_valid]                        # [M,D]
+            om = torch.nonzero(O['mask'], as_tuple=True)[0]
+            sim = q @ O['desc'][om].t()                                     # [M, Po]
+            own = st.idx_valid
+            mir_self = (own // nP) * nP + (nP - 1 - own % nP)               # same physical part, mirrored
+            oxy = torch.stack([(om % nP).float(), (om // nP).float()], -1)
+            mxy = torch.stack([(mir_self % nP).float(), (mir_self // nP).float()], -1)
+            near = (oxy.unsqueeze(0) - mxy.unsqueeze(1)).norm(dim=-1) <= PARTNER_EST
+            best_far = sim.masked_fill(near, -9).max(1)
+            lo_est = om[best_far[1]]
+            okk = best_far[0] > -9
+            if a == 1:   # in arm 1 the own query is already the mirrored view; analogous search in arm 0
+                pass
+            lo = torch.where(need & okk, lo_est, lo)
+            ok = ok | (need & okk)
     if FL_ALIGN > 0:   # snap the other-arm location to the neighbour most similar to the own query descriptor
         q = pair['src'][a]['desc'][st.idx_valid]
         O = pair['src'][1 - a]['desc']
@@ -445,11 +468,25 @@ def force_arm(pair, a):
 def decode(pair):
     if SD_W != 1.0:
         pair = reweight(pair, SD_W)
+    if TTA_PRIOR and TTA_STEPS == 0:   # fixed channel weights averaged over unlabeled trn pairs
+        import numpy as _np
+        import torch.nn.functional as _F
+        if TTA_PRIOR not in _T3:
+            _T3[TTA_PRIOR] = torch.from_numpy(_np.load(TTA_PRIOR)).float().cuda()
+        wp = _F.softplus(_T3[TTA_PRIOR] + 0.5413)
+        f = lambda d: _F.normalize(d * wp, dim=1)
+        pair = dict(pair, src=[dict(S_, desc=f(S_['desc'])) for S_ in pair['src']], trg=dict(pair['trg'], desc=f(pair['trg']['desc'])))
     if TTA_STEPS > 0:
         from decode_lib.tta import adapt_pair
+        init = None
+        if TTA_PRIOR:
+            import numpy as _np
+            if TTA_PRIOR not in _T3:
+                _T3[TTA_PRIOR] = torch.from_numpy(_np.load(TTA_PRIOR)).float().cuda()
+            init = _T3[TTA_PRIOR]
         with torch.enable_grad():
             ta = (1 if bool((pair['arm_of_kpt'] == 1).any()) else 0) if TTA_ARM < 0 else TTA_ARM
-            pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, both=TTA_BOTH, obj=TTA_OBJ, rank=TTA_RANK, groups=TTA_GROUPS, sep=TTA_SEP, hand=TTA_HAND)
+            pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, both=TTA_BOTH, obj=TTA_OBJ, rank=TTA_RANK, groups=TTA_GROUPS, sep=TTA_SEP, hand=TTA_HAND, qw=TTA_QW, init=init, sem=TTA_SEM)
     if FORCE_ARM >= 0:
         pair = force_arm(pair, FORCE_ARM)
     elif ARM_PAIR and not T3_MODEL:   # (training-free path only) decode ALL keypoints in the arm chosen for the pair (arm-1 queries rebuilt from source info)
