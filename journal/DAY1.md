@@ -96,3 +96,5 @@
   30 steps +4.039.
 - seq 15 hypothesis [T1, training-free]: seq14 + TTA (20 steps, reg 0) → dev ≈ +4.3–4.8.
 - seq 15 → kept: dev +4.714 (+0.89), val +4.657 (+1.07 vs seq14). Decode 58 ms/pair.
+- TTA variants (4-cat subset; default 20 steps/τ .05/lr .05/arm0/dsmax = +4.377): pair's arm +4.369; both arms in the loss +4.129; τ .02 +3.844; τ .1 +4.200; lr .1 10 steps +4.219; entropy objective +3.938; soft-cycle objective +4.279 → default kept.
+- TTA low-rank adapter (rank 8/32) collapses (dev −35.8/−28.9: degenerate mutual-confidence solution); 40 steps lr .025 +4.257 → diagonal 20 steps kept.
