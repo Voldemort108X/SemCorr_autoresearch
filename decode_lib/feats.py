@@ -9,6 +9,7 @@ from decode_lib.consensus import consensus
 CFG = dict(LAM=0.5, MU=0.5, CAP=5.0, THR=6.0, LFL=0.25, NOM_ENS=0.75, REF_ENS=0.5, K=30, WIN=2, BETA=0.03)
 FEAT_NAMES = ('row', 'row_gap', 'sim_own', 'sim_fl', 'fl_ok', 'rank', 'in_pool', 'd_cyc', 'd_cyc_fl', 'res_cons',
               'softcyc', 'revrank', 'dist_top', 'peak', 'npool', 'base', 'base_gap', 'row_ent', 'n_valid')
+FEAT_NAMES2 = FEAT_NAMES + ('comp', 'comp_mir', 'comp_own') + tuple(f'loc{i}' for i in range(9))
 
 
 def other_arm_kp(pair, a, st):
@@ -21,7 +22,7 @@ def other_arm_kp(pair, a, st):
     return (k0[j] // nP) * nP + (nP - 1 - k0[j] % nP), v0[j]
 
 
-def arm_candidates(pair, a, cfg=CFG, with_feats=True):
+def arm_candidates(pair, a, cfg=CFG, with_feats=True, extra=False):
     A = pair['src'][a]
     st = C.PairState(A['desc'], pair['trg']['desc'], A['kp'], A['mask'], pair['trg']['mask'])
     if st.M == 0:
@@ -91,7 +92,33 @@ def arm_candidates(pair, a, cfg=CFG, with_feats=True):
              revrank=revrank, dist_top=dist_top / nP, peak=peak, npool=cutoff_k.float().unsqueeze(1).expand_as(topk) / 30,
              base=base, base_gap=(base - bm).clamp(min=-1), row_ent=ent / 8,
              n_valid=valid.float().sum().expand_as(topk) / 20)
-    out['F'] = torch.stack([F[k] for k in FEAT_NAMES], -1)
+    names = FEAT_NAMES
+    if extra:
+        # competition: is the candidate better explained by ANOTHER query keypoint of this pair?
+        vi = st.valid_kpt_indices
+        M = vi.numel()
+        Rj = row[:, topk_idx.reshape(-1)].view(M, M, Kc)                      # [j, i, k] = row_j(cand_ik)
+        vmask = valid.view(M, 1, 1).expand(M, M, Kc) & ~torch.eye(M, dtype=torch.bool, device=st.device).unsqueeze(-1)
+        comp = (Rj.masked_fill(~vmask, -2).max(0)[0] - topk).clamp(min=-1)
+        F['comp'] = comp
+        pos = torch.full((pair['perm'].numel(),), -1, dtype=torch.long, device=st.device)
+        pos[vi] = torch.arange(M, device=st.device)
+        pj = pos[pair['perm'][vi]]                                              # row index of the mirror partner
+        okm = (pj >= 0) & (pj != torch.arange(M, device=st.device))
+        okm = okm & valid[pj.clamp(min=0)]
+        cm = Rj[pj.clamp(min=0), torch.arange(M, device=st.device)] - topk
+        F['comp_mir'] = torch.where(okm.unsqueeze(1), cm, torch.zeros_like(cm))
+        Ro = own_rows[:, topk_idx.reshape(-1)].view(M, M, Kc)
+        F['comp_own'] = (Ro.masked_fill(~vmask, -2).max(0)[0] - sim_own).clamp(min=-1)
+        # local 3x3 shape of the refinement map around the candidate (relative to the centre)
+        cy, cx = pid // nP, pid % nP
+        rm = rmap.clamp(min=-1)
+        c0 = rm.view(M, -1).gather(1, pid)
+        for t, (dy, dx) in enumerate([(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 0), (0, 1), (1, -1), (1, 0), (1, 1)]):
+            yy, xx = (cy + dy).clamp(0, nP - 1), (cx + dx).clamp(0, nP - 1)
+            F[f'loc{t}'] = rm.view(M, -1).gather(1, yy * nP + xx) - c0 if (dy, dx) != (0, 0) else c0
+        names = FEAT_NAMES2
+    out['F'] = torch.stack([F[k] for k in names], -1)
     return st, out
 
 

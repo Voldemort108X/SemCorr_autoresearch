@@ -17,5 +17,6 @@ for cfg in sys.argv[2:]:
     for kv in filter(None, cfg.split(',')):
         k, v = kv.split('=')
         setattr(D, k, type(getattr(D, k))(v) if not isinstance(getattr(D, k), bool) else v == 'True')
-    m = P.evaluate(D.decode, 'tlr', split, cats=cats, quiet=True)
-    print(f"{cfg:40s} {split}: {m['dev']:+.3f} d {m['d10']:+.2f}/{m['d05']:+.2f}/{m['d01']:+.2f} vs_dv {m['delta_vs_dv']:+.3f}", flush=True)
+    m = P.evaluate(D.decode, os.environ.get('METHOD', 'tlr'), split, cats=cats, quiet=True)
+    pk = '/'.join(f'{x:.2f}' for x in m['pck']['dec'])
+    print(f"{cfg:40s} {os.environ.get('METHOD', 'tlr')} pck {pk} {split}: {m['dev']:+.3f} d {m['d10']:+.2f}/{m['d05']:+.2f}/{m['d01']:+.2f} vs_dv {m['delta_vs_dv']:+.3f}", flush=True)

@@ -15,6 +15,7 @@ split = sys.argv[1]
 maxp = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2] != '0' else None
 cats = sys.argv[3].split(',') if len(sys.argv) > 3 else P.CATS
 K = FT.CFG['K']
+EXTRA = os.environ.get('T3_EXTRA', '0') == '1'
 rows = dict(F=[], in_pool=[], base=[], err=[], cat=[], pair=[], kpt=[])
 t0 = time.time()
 rng = np.random.default_rng(1)
@@ -35,7 +36,7 @@ with torch.no_grad():
             gt = torch.from_numpy(k2[:, :2]).float().cuda()
             arm = pair['arm_of_kpt']
             for a in ([0, 1] if bool((arm == 1).any()) else [0]):
-                st, o = FT.arm_candidates(pair, a)
+                st, o = FT.arm_candidates(pair, a, extra=EXTRA)
                 if o is None:
                     continue
                 vi = st.valid_kpt_indices
@@ -61,7 +62,7 @@ with torch.no_grad():
         print(cat, f'{time.time() - t0:.0f}s', flush=True)
         del F_
 out = {k: (np.concatenate(v) if k not in ('cat', 'pair') else np.array(v)) for k, v in rows.items()}
-tag = f'_n{maxp}' if maxp else ''
+tag = ('_x' if EXTRA else '') + (f'_n{maxp}' if maxp else '')
 tag += '' if cats == P.CATS else '_' + '-'.join(cats)
-np.savez(f'{P.cdir("tlr", split)}/t3{tag}.npz', **out, feat_names=np.array(FT.FEAT_NAMES))
+np.savez(f'{P.cdir("tlr", split)}/t3{tag}.npz', **out, feat_names=np.array(FT.FEAT_NAMES2 if EXTRA else FT.FEAT_NAMES))
 print('saved', out['F'].shape, f'{time.time() - t0:.0f}s')
