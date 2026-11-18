@@ -8,7 +8,6 @@
       "Write(//workspace/SemCorr_proj/**)",
       "Edit(//workspace/SemCorrPaper/**)",
       "Write(//workspace/SemCorrPaper/**)",
-      "Bash(git push:*)",
       "Bash(git -C /workspace/SemCorr_proj:*)",
       "Bash(git -C /workspace/SemCorrPaper:*)"
     ]

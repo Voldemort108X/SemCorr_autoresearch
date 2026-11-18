@@ -20,7 +20,11 @@ never stop.
 3. **Disk:** keep this folder < 300 GB (`du -sh cache runs` daily). The network volume is slow for many tiny files:
    cache in a few large files per category.
 4. **GPU:** the single RTX 4090 (24 GB) is yours. One job at a time unless both fit.
-5. **Git:** this folder is its own local repo (no remote). Commit/reset freely here. Never `git push`.
+5. **Git:** this folder is its own repo, remote `origin` = github.com/Voldemort108X/SemCorr_autoresearch (private).
+   Commit/reset freely here. Push only `autoresearch/nov18` (and `main` if needed) to `origin`, at least with every
+   daily report (`git push origin autoresearch/nov18`). Never force-push. Never push or run git in any other repo.
+   `cache/` and large run files are gitignored; keep it that way. If a push fails (credentials), log it in
+   `journal/STATE.md` and continue; do not try to obtain credentials.
 6. **No new packages** unless an idea is impossible without one (then log why in the journal). Available:
    torch 1.13.1+cu117, numpy, scipy, sklearn, cv2, kornia 0.6, POT (`ot`), faiss, networkx, pandas, matplotlib.
 7. **Honesty:** never report a number you did not produce from a log in `runs/`. Record what data each decision was
@@ -188,7 +192,7 @@ Do not spend more than ~10 runs on pure hyperparameter tweaks of one idea before
 - **Daily summary** at ~04:00 pod time (2026-11-19 … 2026-11-22): `reports/daily_<date>.md` with the best dev/val so
   far vs. top1 / dv / oracle, the top-5 ideas tried with Δ, what failed and why, the plan for the next day. Send it to
   the author with SendUserFile (or PushNotification with a 3-line summary if that is unavailable). Commit
-  `results.tsv` + the report.
+  `results.tsv` + the report and `git push origin autoresearch/nov18`.
 - **Final (start 2026-11-22 ~12:00, finish by 2026-11-23 04:00):** stop new ideas; take the 2–3 best decoders (at least
   one training-free); run test + transfer (CleanDIFT, DIY-SC) + generalization (§3). Write `reports/FINAL_REPORT.md`:
   the method(s) in paper-ready prose (equations, hyperparameters, selection protocol), tables vs. top1 / Déjà Vu /
