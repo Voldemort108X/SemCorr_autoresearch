@@ -106,3 +106,7 @@
 - TTA weight sharing (4-cat subset, per-channel = +4.377): 64 groups +3.093, 512 groups +3.431, separate src/trg weights +4.155 → per-channel shared weights kept.
 - seq16 finalist (T3+TTA): TEST +5.988 (76.06/62.00/14.83); CleanDIFT val +5.857; DIY-SC val +2.815; SPair-U +2.029; Pascal +3.894; AP-10K +4.196.
 - TTA_HAND (TTA term making a patch and its horizontal mirror dissimilar (+) / similar (−)) +.5 −0.957, +2 −1.415, −.5 +3.281 (subset; default +4.377) → negative: the handedness-sensitive channels are not semantic.
+- Leave-one-out ablation of seq15 (dev +4.714): −all flip-ensemble +3.463 (−1.25); base refinement W5 β.01 +3.596
+  (−1.12); −Déjà Vu cycle +4.042 (−0.67); −consensus +4.281 (−0.43); −reverse rank +4.491 (−0.22); −ARM_PAIR +4.520
+  (−0.19); −cycle-penalised refinement (REF_CYC 0) +4.712 (0.00) → with TTA, REF_CYC no longer helps.
+- seq 17 hypothesis (simplification): seq15 without REF_CYC — equal dev, simpler.
