@@ -11,13 +11,10 @@
   seq 14 (fa6e150): dev +3.823, val +3.583, test +3.711; CleanDIFT +3.463, DIY-SC +2.917, SPair-U +1.237, Pascal +3.590, AP-10K +2.709.
   seq 11 (53446e7): dev +3.698, val +3.390, test +3.556; CleanDIFT +3.270, DIY-SC +2.945, SPair-U +0.989, Pascal +3.480, AP-10K +2.676.
   seq 7 (f6ff781; = seq 11 with ARM_PAIR=False): dev +3.584, val +3.312, test +3.457; transfer CleanDIFT +3.158, DIY-SC +2.945.
-- CURRENT BEST T3 (learned on trn_train): seq 9 (commit 3d51e99) dev +5.309 (optimistic: dev shares images with
-  trn_train), val +4.972, TEST +5.230 (75.50/61.05/14.05); transfer val CleanDIFT +4.882, DIY-SC +3.657.
-  Reproduce with decode.py: OVR="T3_MODEL=runs/t3_models/x2_full_60_128.pt,ARM_PAIR=False".
-  DeepSets re-ranker on the seq-5 pool, 64 features (T3_EXTRA=2), h128 60 ep; model runs/t3_models/x2_full_60_128.pt
-  (rebuild: T3_EXTRA=2 python scripts/dump_t3.py trn_train 0; python -c "from decode_lib import t3;
-  t3.train('cache/tlr/trn_train/t3_x2.npz','runs/t3_models/x2_full_60_128.pt',60,'cache/tlr/dev/t3_x2.npz',h=128)").
-  T3 model selection MUST use the image-disjoint A/B protocol (decode_lib/t3split.py; tables t3_x2_A / t3_x2_B).
+- CURRENT BEST T3: seq 16 (commit 0003221) dev +6.273 (optimistic), val +6.090 — x2 DeepSets re-ranker trained on
+  TTA-adapted descriptors (T3_EXTRA=2 T3_TTA=20 dump_t3.py), decoded after TTA; model runs/t3_models/x2tta_full_60_128.pt.
+  decode.py default (T3_MODEL set; ARM_PAIR only applies to the training-free path). Training-free = OVR "T3_MODEL=".
+  Previous T3 seq 9 (3d51e99): val +4.972, test +5.230 (reproduce: OVR "T3_MODEL=runs/t3_models/x2_full_60_128.pt,TTA_STEPS=0").
 - Same-refinement baselines (W2 β.03 own map): top1 dev +0.410 / val +0.250 / test +0.379; dv dev +1.767 / val +1.610 / test +1.750.
 - TEST (selected on dev): top1 69.78/54.09/11.04, dv 71.22/54.98/11.19, seq7 73.57/58.51/13.21 (+3.457), seq8 74.97/60.42/13.90 (+4.791).
 - Generalisation (settings from dev): SPair-U test (no perm → no flip-ensemble): dv +0.51, dvW2 +0.50, seq7 +0.99, seq8 +1.45.
