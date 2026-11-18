@@ -30,6 +30,7 @@ WIN, BETA, REF_ENS = 2, 0.03, 0.5
 REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + separable parabola sub-patch offset | 'mix'
 SWAP_T = -1.0    # mirror-pair orientation test: swap the two predictions of a mirror pair if cos < -SWAP_T (-1 = off)
 K_PEAK, R_NMS, K_TOP = 0, 1, 0   # peak pool: K_PEAK local maxima (NMS radius R_NMS) of the forward row + top K_TOP patches
+DENSE_MU, DENSE_R = 0.0, 6.0   # dense-flow residual weight / source radius (patches)
 PROF = 0.0       # relational-profile correlation weight
 RR_FL = 0.0      # reverse-rank penalty in the other arm
 FL_ALIGN = 0     # snap radius (patches) of the other-arm keypoint location (0 = off)
@@ -75,6 +76,8 @@ def decode_arm(pair, a):
     if WFL > 0 or LFL > 0:
         fe, fl_map = flip_ensemble(pair, a, st, pid, d_cyc, topk_sim)
         score = score + fe
+    if DENSE_MU > 0:   # T2 dense flow: local median displacement of cycle-consistent dense Deja Vu matches
+        score = score - DENSE_MU * dense_flow_resid(st, qxy, cxy).clamp(max=CAP) / nP
     if PROF > 0:   # relational profile: candidate's similarities to the OTHER queries vs the query's self-similarities
         vi = st.valid_kpt_indices
         Mk = vi.numel()
@@ -139,6 +142,32 @@ def decode_arm(pair, a):
         p = mirror_swap(pair, a, st, qxy, p)
     out[st.valid_kpt_indices] = p
     return out
+
+
+def dense_flow_resid(st, qxy, cxy, kd=10):
+    """Decode every masked source patch with Deja Vu (top-kd, lambda LAM), keep cycle-consistent ones (d_cyc <= 1) as
+    anchors, predict each query's target as q + median displacement of anchors within DENSE_R (excluding the query's own
+    patch); return |c - p| [M, K] (0 when < 3 anchors)."""
+    nP = st.num_patches
+    S = st.sim_valid                                                     # [Ps, Pt]
+    v, ti = S.topk(min(kd, S.shape[1]), dim=1)
+    sxy = geo.pid_xy(st.src_valid_idx, nP)                               # [Ps,2]
+    bxy = torch.stack([st.back_nn_x, st.back_nn_y], -1)                 # [Pt,2] (back-NN of every valid target)
+    dc = (bxy[ti] - sxy.unsqueeze(1)).norm(dim=-1)                       # [Ps,kd]
+    best = (v - LAM * dc / nP).argmax(1)
+    t_best = ti.gather(1, best[:, None])[:, 0]
+    good = dc.gather(1, best[:, None])[:, 0] <= 1.0
+    disp = geo.pid_xy(st.tgt_valid_idx[t_best], nP) - sxy                 # [Ps,2]
+    D = (sxy.unsqueeze(0) - qxy.unsqueeze(1)).norm(dim=-1)               # [M,Ps]
+    use = (D <= DENSE_R) & (D >= 1.0) & good.unsqueeze(0)
+    n = use.sum(1)
+    big = torch.full_like(D, float('nan'))
+    dx = torch.where(use, disp[:, 0].unsqueeze(0).expand_as(D), big)
+    dy = torch.where(use, disp[:, 1].unsqueeze(0).expand_as(D), big)
+    med = torch.stack([dx.nanmedian(1)[0], dy.nanmedian(1)[0]], -1)      # [M,2]
+    p = qxy + torch.nan_to_num(med)
+    r = (cxy - p.unsqueeze(1)).norm(dim=-1)
+    return torch.where((n >= 3).unsqueeze(1), r, torch.zeros_like(r))
 
 
 def quad_refine(s2d, by, bx, stride):
