@@ -30,6 +30,7 @@ WIN, BETA, REF_ENS = 2, 0.03, 0.5
 REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + separable parabola sub-patch offset | 'mix'
 SWAP_T = -1.0    # mirror-pair orientation test: swap the two predictions of a mirror pair if cos < -SWAP_T (-1 = off)
 K_PEAK, R_NMS, K_TOP = 0, 1, 0   # peak pool: K_PEAK local maxima (NMS radius R_NMS) of the forward row + top K_TOP patches
+MU_ADAPT = 0.0   # >0: scale mu by min(1, inlier_ratio / MU_ADAPT) of the consensus fit
 CONS_ITER = 0    # extra consensus passes using the full score as the RANSAC unary
 RR = 0.02        # reverse-rank penalty: RR * log1p(rank of the query in the candidate's column of the own-arm S)
 NOM_ENS = 0.75    # weight of the other-arm row in the forward row used for nomination + top-k similarity
@@ -80,9 +81,12 @@ def decode_arm(pair, a):
         valid = A['kp_valid'][st.valid_kpt_indices]
         g = torch.Generator(device=st.device)
         g.manual_seed(0)
-        r, _ = consensus(qxy, cxy, u, valid, model=MODEL, thr=THR, gen=g)
+        r, info = consensus(qxy, cxy, u, valid, model=MODEL, thr=THR, gen=g)
         s0 = score
-        score = s0 - MU * r.clamp(max=CAP) / nP
+        mu = MU
+        if MU_ADAPT > 0 and info.get('ok'):
+            mu = MU * min(1.0, (info['n_inl'] / max(info['n'], 1)) / MU_ADAPT)   # trust geometry when the fit is good
+        score = s0 - mu * r.clamp(max=CAP) / nP
         for _ in range(CONS_ITER):   # re-estimate the consensus with the full score as unary
             g.manual_seed(0)
             r, _ = consensus(qxy, cxy, score.masked_fill(~in_pool, -1e9), valid, model=MODEL, thr=THR, gen=g)
