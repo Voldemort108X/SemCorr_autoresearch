@@ -4,10 +4,15 @@ import torch
 import torch.nn.functional as F
 
 
-def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False):
+def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False, hand=0.0):
     A = pair['src'][a]
     X = A['desc'][A['mask']]
     X2 = pair['src'][1 - a]['desc'][pair['src'][1 - a]['mask']]
+    if hand != 0.0:
+        nP = pair['nP']
+        pidx = torch.nonzero(A['mask'], as_tuple=True)[0]
+        mir = (pidx // nP) * nP + (nP - 1 - pidx % nP)
+        Xo, Xm = A['desc'][pidx], pair['src'][1 - a]['desc'][mir]
     Y = pair['trg']['desc'][pair['trg']['mask']]
     if X.shape[0] < 4 or Y.shape[0] < 4:
         return pair
@@ -33,6 +38,8 @@ def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj=
         wt = F.softplus(th_t + 0.5413)[gidx] if sep else w
         Yw = tf(Y, wt)
         loss = reg * ((w - 1) ** 2).mean()
+        if hand != 0.0:   # +: make a patch and its horizontal mirror (other arm) DISsimilar -> handedness channels
+            loss = loss + hand * (tf(Xo, w) * tf(Xm, w)).sum(1).mean()
         for Xa in ([X, X2] if both else [X]):
             Xw = tf(Xa, w)
             S = Xw @ Yw.t() / tau

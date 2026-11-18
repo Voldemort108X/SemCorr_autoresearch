@@ -104,3 +104,4 @@
 - TTA ablation (dev): dv + TTA +1.593 (dv +0.777); dv W2β.03 + TTA +2.696 (dvW2 +1.767) → TTA adds ≈ +0.8–0.9 on its own, roughly additively.
 - seq 16 hypothesis [T3]: T3 (x2 feats) trained on TTA-adapted descriptors (tables T3_TTA=20), decoded after TTA; A/B: B-set mean 50.29 vs 49.83 (non-TTA T3).
 - TTA weight sharing (4-cat subset, per-channel = +4.377): 64 groups +3.093, 512 groups +3.431, separate src/trg weights +4.155 → per-channel shared weights kept.
+- seq16 finalist (T3+TTA): TEST +5.988 (76.06/62.00/14.83); CleanDIFT val +5.857; DIY-SC val +2.815; SPair-U +2.029; Pascal +3.894; AP-10K +4.196.
