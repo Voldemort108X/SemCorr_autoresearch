@@ -35,6 +35,8 @@ REF_CYC, REF_SIG = 0.0, 0.0   # refinement on sim - REF_CYC*d_cyc/w ; Gaussian w
 TTA_STEPS, TTA_REG = 20, 0.0   # per-pair test-time channel re-weighting (label-free)
 TTA_LR, TTA_TAU, TTA_ARM, TTA_BOTH, TTA_OBJ = 0.05, 0.05, 0, False, 'dsmax'   # TTA_ARM -1 = pair's arm
 PARTNER_EST, PARTNER_FORCE = 0.0, False   # estimate unknown mirror partners (exclusion radius around the self-mirror)
+TTA_MIX = 1.0    # <1: mix original and adapted similarities
+TTA_BLOCKNORM = False   # TTA: re-normalise SD and DINO blocks separately after weighting
 TTA_SEM = 0.0    # TTA: source-side semantic contrast weight (annotated kps + mirror permutation)
 TTA_PRIOR = ''   # path of averaged TTA weights (unsupervised, from trn pairs): fixed (TTA_STEPS 0) or init
 TTA_QW = 0.0     # TTA: extra weight on the query keypoint rows' mutual confidence
@@ -484,9 +486,15 @@ def decode(pair):
             if TTA_PRIOR not in _T3:
                 _T3[TTA_PRIOR] = torch.from_numpy(_np.load(TTA_PRIOR)).float().cuda()
             init = _T3[TTA_PRIOR]
+        orig = pair
         with torch.enable_grad():
             ta = (1 if bool((pair['arm_of_kpt'] == 1).any()) else 0) if TTA_ARM < 0 else TTA_ARM
-            pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, both=TTA_BOTH, obj=TTA_OBJ, rank=TTA_RANK, groups=TTA_GROUPS, sep=TTA_SEP, hand=TTA_HAND, qw=TTA_QW, init=init, sem=TTA_SEM)
+            pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, both=TTA_BOTH, obj=TTA_OBJ, rank=TTA_RANK, groups=TTA_GROUPS, sep=TTA_SEP, hand=TTA_HAND, qw=TTA_QW, init=init, sem=TTA_SEM, blocknorm=TTA_BLOCKNORM)
+        if TTA_MIX < 1.0:   # similarity = (1-m) S_orig + m S_tta via concatenated scaled descriptors
+            m = TTA_MIX
+            cat = lambda d0, d1: torch.cat([d0 * (1 - m) ** 0.5, d1 * m ** 0.5], 1)
+            pair = dict(pair, src=[dict(S1, desc=cat(S0['desc'], S1['desc'])) for S0, S1 in zip(orig['src'], pair['src'])],
+                        trg=dict(pair['trg'], desc=cat(orig['trg']['desc'], pair['trg']['desc'])))
     if FORCE_ARM >= 0:
         pair = force_arm(pair, FORCE_ARM)
     elif ARM_PAIR and not T3_MODEL:   # (training-free path only) decode ALL keypoints in the arm chosen for the pair (arm-1 queries rebuilt from source info)

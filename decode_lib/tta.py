@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 
 
-def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False, hand=0.0, qw=0.0, init=None, return_w=False, sem=0.0):
+def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False, hand=0.0, qw=0.0, init=None, return_w=False, sem=0.0, blocknorm=False):
     A = pair['src'][a]
     X = A['desc'][A['mask']]
     X2 = pair['src'][1 - a]['desc'][pair['src'][1 - a]['mask']]
@@ -46,6 +46,8 @@ def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj=
         Z2 = Z * w
         if rank > 0:
             Z2 = Z2 + (Z @ U) @ V.t()
+        if blocknorm and Z2.shape[1] == 3968:   # keep TLR's per-block (SD | DINO) normalisation
+            Z2 = torch.cat([F.normalize(Z2[:, :3200], dim=1), F.normalize(Z2[:, 3200:], dim=1)], 1)
         return F.normalize(Z2, dim=1)
     for _ in range(steps):
         w = F.softplus(th + 0.5413)[gidx]              # softplus(0.5413) = 1

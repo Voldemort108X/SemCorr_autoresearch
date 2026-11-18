@@ -116,3 +116,5 @@
 - TTA prior (θ averaged over 720 unlabeled trn_train pairs, runs/tta_prior.npy): fixed global weights, no per-pair steps +3.848 (subset; no TTA ≈ +3.39, per-pair TTA +4.366) → about half of the TTA gain is a global channel re-weighting; prior as init for per-pair TTA +4.294 (no gain).
 - PARTNER_EST (estimate the mirror partner from features, excluding the self-mirror within r; forced on dev to simulate perm-free data) r3 +1.385, r6 +1.445 vs no flip-ensemble +3.277, true perm +4.366 (subset) → estimated partners are wrong and harmful; the flip-ensemble needs the annotated permutation.
 - TTA_SEM (source-side semantic contrast in the TTA: query vs its flipped semantic view (+) vs self-mirror / own-arm partner (−)) .1/.5/2 → +2.703/+2.462/+2.440 (subset; base +4.366): strongly negative (few views → over-specialised weights).
+- TTA_BLOCKNORM (per-block renormalisation after weighting) +4.103 vs +4.366 (subset): negative.
+- TTA_MIX (mix original and adapted similarities) .5/.75 → +4.140/+4.328 (subset; pure TTA +4.366): negative.
