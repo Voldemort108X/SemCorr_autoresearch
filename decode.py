@@ -27,6 +27,7 @@ MU, CAP, THR, MODEL = 0.5, 5.0, 6.0, 'sim'
 WFL, LFL = 0.0, 0.25          # flip-ensemble: weight of the other-arm similarity and of its cycle distance
 K = 30
 WIN, BETA, REF_ENS = 2, 0.03, 0.5
+RR = 0.02        # reverse-rank penalty: RR * log1p(rank of the query in the candidate's column of the own-arm S)
 NOM_ENS = 0.75    # weight of the other-arm row in the forward row used for nomination + top-k similarity
 
 
@@ -38,6 +39,7 @@ def decode_arm(pair, a):
     if st.M == 0:
         return out
     nP = st.num_patches
+    own_rows = st.sim_kpts
     if NOM_ENS > 0:
         lo, ok = other_arm_kp(pair, a, st)
         O = pair['src'][1 - a]
@@ -66,6 +68,11 @@ def decode_arm(pair, a):
         g.manual_seed(0)
         r, _ = consensus(qxy, cxy, u, valid, model=MODEL, thr=THR, gen=g)
         score = score - MU * r.clamp(max=CAP) / nP
+    if RR > 0:
+        S = st.sim_valid
+        cols = S[:, topk_idx.reshape(-1)].view(S.shape[0], *topk_idx.shape)
+        rr = (cols > torch.gather(own_rows, 1, topk_idx).unsqueeze(0)).sum(0).float()
+        score = score - RR * torch.log1p(rr)
     score = score.masked_fill(~in_pool, -1e9)
     best = score.argmax(1)
     bp = pid.gather(1, best[:, None])[:, 0]
@@ -112,7 +119,7 @@ def flip_ensemble(pair, a, st, pid, d_cyc, topk_sim):
     return WFL * sfl - LFL * dfl / nP, fl_map
 
 
-T3_MODEL = 'runs/t3_models/m_60_64.pt'   # '' = training-free (seq 5); else path of a decode_lib.t3 model (track T3, trained on SPair trn_train)
+T3_MODEL = ''   # '' = training-free (seq 5); else path of a decode_lib.t3 model (track T3, trained on SPair trn_train)
 _T3 = {}
 
 
