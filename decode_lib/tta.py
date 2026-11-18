@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 
 
-def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0):
+def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False):
     A = pair['src'][a]
     X = A['desc'][A['mask']]
     X2 = pair['src'][1 - a]['desc'][pair['src'][1 - a]['mask']]
@@ -12,8 +12,11 @@ def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj=
     if X.shape[0] < 4 or Y.shape[0] < 4:
         return pair
     D = X.shape[1]
-    th = torch.zeros(D, device=X.device, requires_grad=True)
-    params = [th]
+    G = groups if groups > 0 else D
+    gidx = (torch.arange(D, device=X.device) * G // D)
+    th = torch.zeros(G, device=X.device, requires_grad=True)
+    th_t = torch.zeros(G, device=X.device, requires_grad=True)
+    params = [th, th_t] if sep else [th]
     if rank > 0:
         g = torch.Generator(device=X.device); g.manual_seed(0)
         U = (torch.randn(D, rank, device=X.device, generator=g) / D ** 0.5).requires_grad_(True)
@@ -26,8 +29,9 @@ def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj=
             Z2 = Z2 + (Z @ U) @ V.t()
         return F.normalize(Z2, dim=1)
     for _ in range(steps):
-        w = F.softplus(th + 0.5413)                     # softplus(0.5413) = 1
-        Yw = tf(Y, w)
+        w = F.softplus(th + 0.5413)[gidx]              # softplus(0.5413) = 1
+        wt = F.softplus(th_t + 0.5413)[gidx] if sep else w
+        Yw = tf(Y, wt)
         loss = reg * ((w - 1) ** 2).mean()
         for Xa in ([X, X2] if both else [X]):
             Xw = tf(Xa, w)
@@ -45,7 +49,7 @@ def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj=
         loss.backward()
         opt.step()
     with torch.no_grad():
-        w = F.softplus(th + 0.5413)
-        f = lambda d: tf(d, w)
-        src = [dict(S_, desc=f(S_['desc'])) for S_ in pair['src']]
-        return dict(pair, src=src, trg=dict(pair['trg'], desc=f(pair['trg']['desc'])))
+        w = F.softplus(th + 0.5413)[gidx]
+        wt = F.softplus(th_t + 0.5413)[gidx] if sep else w
+        src = [dict(S_, desc=tf(S_['desc'], w)) for S_ in pair['src']]
+        return dict(pair, src=src, trg=dict(pair['trg'], desc=tf(pair['trg']['desc'], wt)))

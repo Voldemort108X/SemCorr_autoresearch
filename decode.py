@@ -34,6 +34,8 @@ DENSE_MU, DENSE_R = 0.0, 6.0   # dense-flow residual weight / source radius (pat
 REF_CYC, REF_SIG = 0.5, 0.0   # refinement on sim - REF_CYC*d_cyc/w ; Gaussian window prior sigma (patches)
 TTA_STEPS, TTA_REG = 20, 0.0   # per-pair test-time channel re-weighting (label-free)
 TTA_LR, TTA_TAU, TTA_ARM, TTA_BOTH, TTA_OBJ = 0.05, 0.05, 0, False, 'dsmax'   # TTA_ARM -1 = pair's arm
+TTA_SEP = False  # separate TTA weights for source and target
+TTA_GROUPS = 0   # TTA weights shared within contiguous channel groups (0 = per channel)
 TTA_RANK = 0     # extra low-rank linear adapter in the TTA
 ENS_MIN = 0.0    # flip-ensemble disagreement penalty
 REF_UP = 1       # refinement map up-sampling factor (1 = off)
@@ -446,7 +448,7 @@ def decode(pair):
         from decode_lib.tta import adapt_pair
         with torch.enable_grad():
             ta = (1 if bool((pair['arm_of_kpt'] == 1).any()) else 0) if TTA_ARM < 0 else TTA_ARM
-            pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, both=TTA_BOTH, obj=TTA_OBJ, rank=TTA_RANK)
+            pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, both=TTA_BOTH, obj=TTA_OBJ, rank=TTA_RANK, groups=TTA_GROUPS, sep=TTA_SEP)
     if FORCE_ARM >= 0:
         pair = force_arm(pair, FORCE_ARM)
     elif ARM_PAIR and not T3_MODEL:   # (training-free path only) decode ALL keypoints in the arm chosen for the pair (arm-1 queries rebuilt from source info)
