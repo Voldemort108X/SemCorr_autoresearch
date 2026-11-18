@@ -317,7 +317,7 @@ if __name__ == '__main__':
         import decode as D
         for kv in filter(None, os.environ.get('OVR', '').split(',')):
             k, v = kv.split('=')
-            setattr(D, k, type(getattr(D, k))(v))
+            setattr(D, k, (v == 'True') if isinstance(getattr(D, k), bool) else type(getattr(D, k))(v))
             print(f'override {k}={v!r}')
         c = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], cwd=HERE).decode().strip()
         tag = os.environ.get('TAG', '')

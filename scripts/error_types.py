@@ -14,7 +14,7 @@ for cfg in sys.argv[2:] or ['']:
         setattr(D, k, v)
     for kv in filter(None, cfg.split(',')):
         k, v = kv.split('=')
-        setattr(D, k, type(getattr(D, k))(v))
+        setattr(D, k, (v == 'True') if isinstance(getattr(D, k), bool) else type(getattr(D, k))(v))
     stats = {}
     for cat in P.CATS:
         meta = P.load_split('tlr', split, cat)
