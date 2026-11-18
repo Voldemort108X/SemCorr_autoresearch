@@ -73,3 +73,5 @@
 - seq11 finalist (training-free): TEST +3.556 (73.72/58.67/13.19); CleanDIFT val +3.270; DIY-SC val +2.945; SPair-U +0.989; Pascal +3.480; AP-10K CF +2.676.
 - seq13 (analysis) T3 x2 trained with extra perm-dropped pairs: dev table +1.98 over seq5 (seq9 +2.07); val +4.932, SPair-U +1.221, Pascal +3.797, AP-10K +3.576 (seq9: +4.972/+0.982/+3.963/+3.456) → within noise except SPair-U ↑.
 - ZROW (pool-adaptive penalty scaling by top-K sim spread) .5/1 → +3.671/+3.666 vs seq11 +3.698: negative.
+- sweeps on seq11: REF_CYC .5 +3.823, REF_SIG 1.5/W4 +3.827, REF_SIG 1/W3 +3.642, REF_SIG 2/W5 +3.580, both combined +3.816 / +3.730 / +3.823 → combinations don't add.
+- seq 14 hypothesis [T4/T1]: refine on the Déjà Vu score map (sim − 0.5·d_cyc/w of every target patch in the window) → +0.12.

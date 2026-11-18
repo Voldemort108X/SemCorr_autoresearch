@@ -31,6 +31,7 @@ REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + sepa
 SWAP_T = -1.0    # mirror-pair orientation test: swap the two predictions of a mirror pair if cos < -SWAP_T (-1 = off)
 K_PEAK, R_NMS, K_TOP = 0, 1, 0   # peak pool: K_PEAK local maxima (NMS radius R_NMS) of the forward row + top K_TOP patches
 DENSE_MU, DENSE_R = 0.0, 6.0   # dense-flow residual weight / source radius (patches)
+REF_CYC, REF_SIG = 0.5, 0.0   # refinement on sim - REF_CYC*d_cyc/w ; Gaussian window prior sigma (patches)
 ZROW = 0.0       # pool-adaptive penalty scaling exponent (0 = off)
 PROF = 0.0       # relational-profile correlation weight
 RR_FL = 0.0      # reverse-rank penalty in the other arm
@@ -147,6 +148,17 @@ def decode_arm(pair, a):
     s2d = st.full_sim_2d
     if REF_ENS > 0:
         s2d = (s2d + REF_ENS * fl_map) / (1 + REF_ENS)
+    if REF_CYC > 0:   # refine on a score map: similarity minus the cycle penalty of every target patch
+        bxy = torch.stack([st.back_nn_x, st.back_nn_y], -1)                       # [Pt,2]
+        dcm = (bxy.unsqueeze(0) - qxy.unsqueeze(1)).norm(dim=-1)                   # [M,Pt]
+        pen = torch.zeros(s2d.shape[0], nP * nP, device=st.device)
+        pen[:, st.tgt_valid_idx] = dcm
+        s2d = s2d - REF_CYC * pen.view(-1, nP, nP) / nP
+    if REF_SIG > 0:   # Gaussian prior around the chosen patch instead of a hard window
+        yy = torch.arange(nP, device=st.device).view(1, nP, 1).float()
+        xx = torch.arange(nP, device=st.device).view(1, 1, nP).float()
+        d2 = (yy - (bp // nP).view(-1, 1, 1).float()) ** 2 + (xx - (bp % nP).view(-1, 1, 1).float()) ** 2
+        s2d = s2d - BETA * d2 / (2 * REF_SIG ** 2)
     nx, ny = C.window_soft_argmax_2d(s2d, bp // nP, bp % nP, WIN, BETA, st.anno_stride)
     if REF_MODE != 'soft':
         qx, qy = quad_refine(s2d, bp // nP, bp % nP, st.anno_stride)
