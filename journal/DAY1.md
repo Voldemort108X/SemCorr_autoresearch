@@ -101,3 +101,5 @@
 - Launched T3 tables on TTA-adapted descriptors (T3_TTA=20) for dev + trn_train (overnight).
 - seq15 finalist so far: TEST +4.378 (74.16/59.74/14.15); CleanDIFT val +4.593 (seq14 +3.463); DIY-SC val +2.355 (seq14 +2.917 → TTA HURTS the supervised DIY-SC features by −0.56; still +2.1 over dv).
 - seq15 finalist: SPair-U +1.789 (seq14 +1.237), Pascal +3.977 (+3.590), AP-10K +3.472 (+2.709).
+- TTA ablation (dev): dv + TTA +1.593 (dv +0.777); dv W2β.03 + TTA +2.696 (dvW2 +1.767) → TTA adds ≈ +0.8–0.9 on its own, roughly additively.
+- seq 16 hypothesis [T3]: T3 (x2 feats) trained on TTA-adapted descriptors (tables T3_TTA=20), decoded after TTA; A/B: B-set mean 50.29 vs 49.83 (non-TTA T3).

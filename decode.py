@@ -379,7 +379,7 @@ def flip_ensemble(pair, a, st, pid, d_cyc, topk_sim):
     return WFL * sfl - LFL * dfl / nP, fl_map
 
 
-T3_MODEL = ''   # '' = training-free (seq 5); else path of a decode_lib.t3 model (track T3, trained on SPair trn_train)
+T3_MODEL = 'runs/t3_models/x2tta_full_60_128.pt'   # '' = training-free (seq 5); else path of a decode_lib.t3 model (track T3, trained on SPair trn_train)
 _T3 = {}
 T3_REF_CYC = 0.0  # cycle-penalised refinement map for the T3 path
 
@@ -449,7 +449,7 @@ def decode(pair):
             pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, both=TTA_BOTH, obj=TTA_OBJ, rank=TTA_RANK)
     if FORCE_ARM >= 0:
         pair = force_arm(pair, FORCE_ARM)
-    elif ARM_PAIR:   # decode ALL keypoints in the arm chosen for the pair (arm-1 queries rebuilt from source info)
+    elif ARM_PAIR and not T3_MODEL:   # (training-free path only) decode ALL keypoints in the arm chosen for the pair (arm-1 queries rebuilt from source info)
         pair = force_arm(pair, 1 if bool((pair['arm_of_kpt'] == 1).any()) else 0)
     arm = pair['arm_of_kpt']
     f = decode_arm_t3 if T3_MODEL else decode_arm

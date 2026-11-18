@@ -19,6 +19,7 @@ EXTRA = int(os.environ.get('T3_EXTRA', '0'))
 REFCYC = float(os.environ.get('T3_REFCYC', '0'))
 if REFCYC > 0:
     FT.CFG['REF_CYC'] = REFCYC
+TTA = int(os.environ.get('T3_TTA', '0'))
 PEAKS = int(os.environ.get('T3_PEAKS', '0'))
 if PEAKS > 0:
     FT.CFG['PEAKS'] = PEAKS
@@ -39,6 +40,10 @@ with torch.no_grad():
             if vis.sum() == 0:
                 continue
             pair = P.make_pair(F_, meta, j, cat)
+            if TTA > 0:
+                from decode_lib.tta import adapt_pair
+                with torch.enable_grad():
+                    pair = adapt_pair(pair, steps=TTA, reg=0.0)
             if PERMDROP > 0 and rng.random() < PERMDROP:
                 pair['perm'] = torch.full_like(pair['perm'], -1)
             bbox = float(meta['bbox'][j])
@@ -71,7 +76,7 @@ with torch.no_grad():
         print(cat, f'{time.time() - t0:.0f}s', flush=True)
         del F_
 out = {k: (np.concatenate(v) if k not in ('cat', 'pair') else np.array(v)) for k, v in rows.items()}
-tag = {0: '', 1: '_x', 2: '_x2'}[EXTRA] + (f'_pd{PERMDROP:g}' if PERMDROP > 0 else '') + (f'_rc{REFCYC:g}' if REFCYC > 0 else '') + (f'_pk{PEAKS}' if PEAKS > 0 else '') + (f'_n{maxp}' if maxp else '')
+tag = {0: '', 1: '_x', 2: '_x2'}[EXTRA] + (f'_pd{PERMDROP:g}' if PERMDROP > 0 else '') + (f'_rc{REFCYC:g}' if REFCYC > 0 else '') + (f'_pk{PEAKS}' if PEAKS > 0 else '') + (f'_tta{TTA}' if TTA > 0 else '') + (f'_n{maxp}' if maxp else '')
 tag += '' if cats == P.CATS else '_' + '-'.join(cats)
 np.savez(f'{P.cdir("tlr", split)}/t3{tag}.npz', **out, feat_names=np.array({0: FT.FEAT_NAMES, 1: FT.FEAT_NAMES2, 2: FT.FEAT_NAMES3}[EXTRA]))
 print('saved', out['F'].shape, f'{time.time() - t0:.0f}s')
