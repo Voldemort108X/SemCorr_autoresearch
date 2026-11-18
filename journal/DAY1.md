@@ -21,3 +21,13 @@
 - seq 2 hypothesis [T1/T4]: flip-ensemble — score the candidate also against the same semantic keypoint in the other source arm (mirrored counterpart) + its cycle there (WFL 0.5, LFL 0.25) → dev ≈ +1.37 (offline).
 - seq 3 hypothesis [T4]: refine with the flip-ensembled similarity map (own + 0.5·other-arm map of the same semantic kp) → better localisation at all thresholds (sweep: dev +2.04).
 - seq 4 hypothesis [T4]: flip-ensembled forward row (own + 0.75·other-arm row)/1.75 for nomination and the similarity term (replaces WFL) → better pool + choice (sweep +2.19).
+- seq 3 → kept (dev +2.036, val +1.971). seq 4 → kept (dev +2.191, val +2.123; vs dv +1.41 dev / +1.23 val).
+  Transfer (val, settings from TLR dev): CleanDIFT +1.963 (dv +0.700), DIY-SC +2.805 (dv +0.240).
+- Sweeps (not committed): SRC_AVG (query 4-neighbour smoothing) 0.25 → +1.79, 0.5 → +1.29 (hurts @.01): negative.
+  Greedy one-to-one constraint among query keypoints (offline, on seq2-like unary): ≤ +0.05: negative.
+  Refinement β 0.02 (own map) raises @.10 but hurts @.05/.01; own-map window 3 +1.917 vs window 5 +1.371 (seq2
+  settings), window 7 worse (+0.885): the base window 5 is too wide for this metric.
+- Refinement sweeps on seq4 (dev): window 5/4/3/2 → +2.19/+2.50/+2.73/+2.81 (β .01); W3 β.015 +3.00, W3 β.02 +3.05,
+  W3 β.03 +2.80, W2 β.02 +3.22, W2 β.03 +3.25, W2 β.05 +3.00, W1 β.02 +3.05, W4 β.02 +2.50. Analysis: journal/analysis_4.md.
+- seq 5 hypothesis [T4]: refinement window 2 / β 0.03 (on the ensembled map) → dev ≈ +3.25. Baselines with the same
+  refinement to be measured (fairness).

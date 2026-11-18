@@ -1,0 +1,19 @@
+[prepare] cleandift aeroplane feat=True splits=['val', 'dev'] 97s
+[prepare] cleandift bicycle feat=True splits=['val', 'dev'] 97s
+[prepare] cleandift bird feat=True splits=['val', 'dev'] 83s
+[prepare] cleandift boat feat=True splits=['val', 'dev'] 89s
+[prepare] cleandift bottle feat=True splits=['val', 'dev'] 96s
+[prepare] cleandift bus feat=True splits=['val', 'dev'] 100s
+[prepare] cleandift car feat=True splits=['val', 'dev'] 102s
+[prepare] cleandift cat feat=True splits=['val', 'dev'] 96s
+[prepare] cleandift chair feat=True splits=['val', 'dev'] 86s
+[prepare] cleandift cow feat=True splits=['val', 'dev'] 93s
+[prepare] cleandift dog feat=True splits=['val', 'dev'] 87s
+[prepare] cleandift horse feat=True splits=['val', 'dev'] 82s
+[prepare] cleandift motorbike feat=True splits=['val', 'dev'] 81s
+[prepare] cleandift person feat=True splits=['val', 'dev'] 92s
+[prepare] cleandift pottedplant feat=True splits=['val', 'dev'] 91s
+[prepare] cleandift sheep feat=True splits=['val', 'dev'] 91s
+[prepare] cleandift train feat=True splits=['val', 'dev'] 95s
+[prepare] cleandift tvmonitor feat=True splits=['val', 'dev'] 91s
+[prepare] done

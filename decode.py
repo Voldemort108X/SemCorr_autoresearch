@@ -26,7 +26,7 @@ LAM = 0.5
 MU, CAP, THR, MODEL = 0.5, 5.0, 6.0, 'sim'
 WFL, LFL = 0.0, 0.25          # flip-ensemble: weight of the other-arm similarity and of its cycle distance
 K = 30
-WIN, BETA, REF_ENS = 5, 0.01, 0.5
+WIN, BETA, REF_ENS = 2, 0.03, 0.5
 NOM_ENS = 0.75    # weight of the other-arm row in the forward row used for nomination + top-k similarity
 
 

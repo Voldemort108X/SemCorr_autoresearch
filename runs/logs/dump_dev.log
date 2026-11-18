@@ -1,0 +1,19 @@
+aeroplane 17s
+bicycle 38s
+bird 56s
+boat 75s
+bottle 92s
+bus 109s
+car 127s
+cat 145s
+chair 165s
+cow 184s
+dog 203s
+horse 223s
+motorbike 241s
+person 261s
+pottedplant 280s
+sheep 299s
+train 318s
+tvmonitor 335s
+saved {'pid': (37565, 30), 'in_pool': (37565, 30), 'sim': (37565, 30), 'd_cyc': (37565, 30), 'rank': (37565, 30), 'softcyc0.02': (37565, 30), 'softcyc0.05': (37565, 30), 'revrank': (37565, 30), 'sim_mir': (37565, 30), 'hand': (37565, 30), 'fl_ok': (37565, 30), 'sim_fl': (37565, 30), 'd_cyc_fl': (37565, 30), 'sim_sd': (37565, 30), 'd_cyc_sd': (37565, 30), 'sim_dino': (37565, 30), 'd_cyc_dino': (37565, 30), 'res_csim3': (37565, 30), 'res_csim6': (37565, 30), 'res_caff3': (37565, 30), 'res_caff6': (37565, 30), 'n_valid': (37565, 30), 'ctx2p0': (37565, 30), 'ctx4p0': (37565, 30), 'ctx8p0': (37565, 30), 'ctx4p0s1': (37565, 30), 'ctx2p1': (37565, 30), 'ctx4p1': (37565, 30), 'ctx8p1': (37565, 30), 'ctx4p1s1': (37565, 30), 'res_aff': (37565, 30), 'n_anchor': (37565, 30), 'n_inl': (37565, 30), 'res_mls4': (37565, 30), 'res_mlsi4': (37565, 30), 'res_mls8': (37565, 30), 'res_mlsi8': (37565, 30), 'res_mls16': (37565, 30), 'res_mlsi16': (37565, 30), 'err': (37565, 30), 'qx': (37565, 30), 'qy': (37565, 30), 'bbox': (37565, 30), 'px': (37565, 30), 'py': (37565, 30), 'near_kp': (37565, 30), 'is_mirror': (37565, 30), 'cat': (37565,), 'pair': (37565,), 'kpt': (37565,), 'arm': (37565,)} 336s

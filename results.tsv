@@ -8,3 +8,5 @@ ref-or30	2e2b05f	13.676	18.96	17.25	4.82	87.16	69.31	14.47	304	ref	ref	oracle to
 2	d975d18	1.371	2.43	1.48	0.20	70.63	53.54	9.86	156	T1	keep	+ flip-ensemble sim (other arm, WFL0.5) + other-arm cycle (LFL0.25) on seq1 [vs_dv +0.594 std 0.059; split dev/tlr]
 3	ca932c8	2.036	3.03	2.27	0.80	71.23	54.33	10.45	211	T4	keep	+ refinement on flip-ensembled sim map (REF_ENS 0.5) on seq2 [vs_dv +1.258 std 0.085; split dev/tlr]
 4	61c2572	2.191	3.32	2.43	0.81	71.52	54.49	10.47	178	T4	keep	flip-ensembled forward row (NOM_ENS 0.75) for pool+sim, WFL 0; seq3 otherwise [vs_dv +1.414 std 0.097; split dev/tlr]
+4	61c2572	1.963	2.97	2.19	0.73	71.85	55.18	10.89	164	T4	transfer	seq4 transfer CleanDIFT val (settings from TLR dev) [vs_dv +1.263 std 0.096; split val/cleandift]
+4	a9d269a	2.805	3.73	3.49	1.19	77.46	60.59	12.49	79	T4	transfer	seq4 transfer DIY-SC val (settings from TLR dev; no adaptive flip in base) [vs_dv +2.565 std 0.114; split val/diysc]

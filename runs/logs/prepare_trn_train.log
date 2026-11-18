@@ -1,0 +1,16 @@
+[prepare] tlr aeroplane feat=False splits=['trn_train'] 222s
+[prepare] tlr bicycle feat=False splits=['trn_train'] 258s
+[prepare] tlr bird feat=False splits=['trn_train'] 232s
+[prepare] tlr boat feat=False splits=['trn_train'] 237s
+[prepare] tlr bottle feat=False splits=['trn_train'] 209s
+[prepare] tlr bus feat=False splits=['trn_train'] 271s
+[prepare] tlr car feat=False splits=['trn_train'] 269s
+[prepare] tlr cat feat=False splits=['trn_train'] 325s
+[prepare] tlr chair feat=False splits=['trn_train'] 237s
+[prepare] tlr cow feat=False splits=['trn_train'] 296s
+[prepare] tlr dog feat=False splits=['trn_train'] 254s
+[prepare] tlr horse feat=False splits=['trn_train'] 230s
+[prepare] tlr motorbike feat=False splits=['trn_train'] 258s
+[prepare] tlr person feat=False splits=['trn_train'] 221s
+[prepare] tlr pottedplant feat=False splits=['trn_train'] 207s
+[prepare] tlr sheep feat=False splits=['trn_train'] 284s
