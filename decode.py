@@ -197,8 +197,9 @@ def other_arm_kp(pair, a, st):
     k0, v0 = pair['src'][0]['kp'], pair['src'][0]['kp_valid']
     if a == 1:
         return k0[vi], v0[vi]
-    j = pair['perm'][vi]
-    return (k0[j] // nP) * nP + (nP - 1 - k0[j] % nP), v0[j]
+    j = pair['perm'][vi]                      # -1 = mirror partner unknown (datasets without a flip permutation)
+    jc = j.clamp(min=0)
+    return (k0[jc] // nP) * nP + (nP - 1 - k0[jc] % nP), v0[jc] & (j >= 0)
 
 
 def flip_ensemble(pair, a, st, pid, d_cyc, topk_sim):

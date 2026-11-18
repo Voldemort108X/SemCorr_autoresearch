@@ -18,8 +18,9 @@ def other_arm_kp(pair, a, st):
     k0, v0 = pair['src'][0]['kp'], pair['src'][0]['kp_valid']
     if a == 1:
         return k0[vi], v0[vi]
-    j = pair['perm'][vi]
-    return (k0[j] // nP) * nP + (nP - 1 - k0[j] % nP), v0[j]
+    j = pair['perm'][vi]                      # -1 = mirror partner unknown (datasets without a flip permutation)
+    jc = j.clamp(min=0)
+    return (k0[jc] // nP) * nP + (nP - 1 - k0[jc] % nP), v0[jc] & (j >= 0)
 
 
 def arm_candidates(pair, a, cfg=CFG, with_feats=True, extra=False):
@@ -103,7 +104,8 @@ def arm_candidates(pair, a, cfg=CFG, with_feats=True, extra=False):
         F['comp'] = comp
         pos = torch.full((pair['perm'].numel(),), -1, dtype=torch.long, device=st.device)
         pos[vi] = torch.arange(M, device=st.device)
-        pj = pos[pair['perm'][vi]]                                              # row index of the mirror partner
+        pv = pair['perm'][vi]
+        pj = torch.where(pv >= 0, pos[pv.clamp(min=0)], torch.full_like(pv, -1))   # row index of the mirror partner
         okm = (pj >= 0) & (pj != torch.arange(M, device=st.device))
         okm = okm & valid[pj.clamp(min=0)]
         cm = Rj[pj.clamp(min=0), torch.arange(M, device=st.device)] - topk
