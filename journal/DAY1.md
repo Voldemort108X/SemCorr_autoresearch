@@ -40,3 +40,8 @@
 - seq 6 hypothesis [T3]: DeepSets listwise re-ranker (19 cue features, h64, 60 ep, trained on 600 trn_train pairs/cat, 13 s) on the seq-5 pool → dev ≈ +4.4 (offline table: +1.19 over seq5).
 - seq 7 hypothesis [T1, training-free]: reverse-rank penalty 0.02·log1p(rank of the query in the candidate's own-arm column) on seq5 — T3 permutation importance ranked revrank/softcyc highest; offline on dev table +0.33 over seq5.
 - seq 8 hypothesis [T3]: re-ranker with 12 extra features (competition from other query kps, mirror-partner competition, 3x3 local map shape), trained on ALL trn_train pairs (334k kpts), h128, 60 ep (79 s) → offline +1.50 over seq5 → dev ≈ +4.75.
+- Training-free linear-weight coordinate ascent on the dev t3_x table (λ, LFL, μ, cap, RR, softcyc, comp): best +0.17 over seq7 (offline; likely partly dev-overfit) → the linear family is saturated; not run.
+- Sweeps on seq7 (dev, not kept): CONS_ITER 1 +3.638 (+0.05); mirror-pair orientation swap SWAP_T 0/.5/.8 →
+  +3.636/+3.650/+3.640 (+0.05–0.07, noise); peak (NMS) pools K_PEAK 10 / 20 / 10+top10 / 10 r2 → +2.75/+2.68/+3.43/+2.42;
+  block reweighting SD_W .7/1.3 → +3.23/+2.97; refinement quad → +3.05 (@.01 ↑, @.10 ↓), mix → +3.59 (= seq7).
+  T3 3-seed ensemble +0.06 over a single model (offline). Analysis: journal/analysis_8.md (mirror errors untouched).
