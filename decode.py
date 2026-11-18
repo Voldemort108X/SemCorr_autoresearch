@@ -32,6 +32,8 @@ SWAP_T = -1.0    # mirror-pair orientation test: swap the two predictions of a m
 K_PEAK, R_NMS, K_TOP = 0, 1, 0   # peak pool: K_PEAK local maxima (NMS radius R_NMS) of the forward row + top K_TOP patches
 DENSE_MU, DENSE_R = 0.0, 6.0   # dense-flow residual weight / source radius (patches)
 REF_CYC, REF_SIG = 0.5, 0.0   # refinement on sim - REF_CYC*d_cyc/w ; Gaussian window prior sigma (patches)
+HAND2 = 0.0      # mirror-pair handedness direction weight
+REF_CONS = 0.0   # refinement map also penalised by mu * min(dist to consensus prediction, cap)
 ZROW = 0.0       # pool-adaptive penalty scaling exponent (0 = off)
 PROF = 0.0       # relational-profile correlation weight
 RR_FL = 0.0      # reverse-rank penalty in the other arm
@@ -86,6 +88,25 @@ def decode_arm(pair, a):
         score = score + fe * (pen_scale if WFL == 0 else 1.0)
     if DENSE_MU > 0:   # T2 dense flow: local median displacement of cycle-consistent dense Deja Vu matches
         score = score - DENSE_MU * dense_flow_resid(st, qxy, cxy).clamp(max=CAP) / nP
+    if HAND2 > 0:   # mirror-pair handedness direction learned from 4 source views (2 per side, raw + mirrored)
+        vi = st.valid_kpt_indices
+        Mk = vi.numel()
+        lo2, ok2 = other_arm_kp(pair, a, st)
+        D_a, D_o = A['desc'], pair['src'][1 - a]['desc']
+        pos = torch.full((pair['perm'].numel(),), -1, dtype=torch.long, device=st.device)
+        pos[vi] = torch.arange(Mk, device=st.device)
+        pv = pair['perm'][vi]
+        pj = torch.where(pv >= 0, pos[pv.clamp(min=0)], torch.full_like(pv, -1))
+        vk = A['kp_valid'][vi]
+        use = (pj >= 0) & (pj != torch.arange(Mk, device=st.device)) & vk & vk[pj.clamp(min=0)] & ok2 & ok2[pj.clamp(min=0)]
+        if bool(use.any()):
+            ci = D_a[st.idx_valid] + D_o[lo2]                                   # class i (raw i + mirrored partner view)
+            cj = ci[pj.clamp(min=0)]                                             # class j
+            w = ci - cj
+            w = w / w.norm(dim=-1, keepdim=True).clamp(min=1e-6)
+            tc = pair['trg']['desc'][pid.reshape(-1)].view(*pid.shape, -1)
+            h = (tc * w.unsqueeze(1)).sum(-1)                                    # [M,K]
+            score = score + HAND2 * torch.where(use.unsqueeze(1), h, torch.zeros_like(h))
     if PROF > 0:   # relational profile: candidate's similarities to the OTHER queries vs the query's self-similarities
         vi = st.valid_kpt_indices
         Mk = vi.numel()
@@ -154,6 +175,13 @@ def decode_arm(pair, a):
         pen = torch.zeros(s2d.shape[0], nP * nP, device=st.device)
         pen[:, st.tgt_valid_idx] = dcm
         s2d = s2d - REF_CYC * pen.view(-1, nP, nP) / nP
+    if REF_CONS > 0 and MU > 0 and info.get('ok'):   # also penalise distance to the consensus prediction in the map
+        from decode_lib.consensus import _apply
+        pq = _apply(info['B'], qxy)                                                   # [M,2]
+        yy = torch.arange(nP, device=st.device).view(1, nP, 1).float()
+        xx = torch.arange(nP, device=st.device).view(1, 1, nP).float()
+        rm = ((xx - pq[:, 0].view(-1, 1, 1)) ** 2 + (yy - pq[:, 1].view(-1, 1, 1)) ** 2).sqrt()
+        s2d = s2d - REF_CONS * rm.clamp(max=CAP) / nP
     if REF_SIG > 0:   # Gaussian prior around the chosen patch instead of a hard window
         yy = torch.arange(nP, device=st.device).view(1, nP, 1).float()
         xx = torch.arange(nP, device=st.device).view(1, 1, nP).float()

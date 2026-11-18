@@ -71,6 +71,11 @@ def arm_candidates(pair, a, cfg=CFG, with_feats=True, extra=False):
     fm = (O['desc'][lo] @ trg.t()).masked_fill(~pair['trg']['mask'].unsqueeze(0), -float('inf')).view(-1, nP, nP)
     fl_map = torch.where(ok.view(-1, 1, 1), fm, st.full_sim_2d)
     rmap = (st.full_sim_2d + cfg['REF_ENS'] * fl_map) / (1 + cfg['REF_ENS'])
+    if cfg.get('REF_CYC', 0) > 0:   # cycle-penalised refinement map (as decode.py REF_CYC)
+        bxy = torch.stack([st.back_nn_x, st.back_nn_y], -1)
+        pen = torch.zeros(rmap.shape[0], nP * nP, device=st.device)
+        pen[:, st.tgt_valid_idx] = (bxy.unsqueeze(0) - qxy.unsqueeze(1)).norm(dim=-1)
+        rmap = rmap - cfg['REF_CYC'] * pen.view(-1, nP, nP) / nP
     out = dict(pid=pid, in_pool=in_pool, base=base, map=rmap, valid=valid)
     if not with_feats:
         return st, out
