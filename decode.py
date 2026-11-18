@@ -335,6 +335,7 @@ def flip_ensemble(pair, a, st, pid, d_cyc, topk_sim):
 
 T3_MODEL = ''   # '' = training-free (seq 5); else path of a decode_lib.t3 model (track T3, trained on SPair trn_train)
 _T3 = {}
+T3_REF_CYC = 0.0  # cycle-penalised refinement map for the T3 path
 
 
 def decode_arm_t3(pair, a):
@@ -348,6 +349,13 @@ def decode_arm_t3(pair, a):
     if o is None:
         return out
     s = _T3[T3_MODEL](o['F'], o['in_pool'])
+    if T3_REF_CYC > 0:
+        nP = st.num_patches
+        qxy = torch.stack([st.kpt_x, st.kpt_y], -1)
+        bxy = torch.stack([st.back_nn_x, st.back_nn_y], -1)
+        pen = torch.zeros(qxy.shape[0], nP * nP, device=st.device)
+        pen[:, st.tgt_valid_idx] = (bxy.unsqueeze(0) - qxy.unsqueeze(1)).norm(dim=-1)
+        o = dict(o, map=o['map'] - T3_REF_CYC * pen.view(-1, nP, nP) / nP)
     nx, ny = FT.refine(st, o, s.argmax(1))
     out[st.valid_kpt_indices] = torch.stack([nx, ny], 1)
     return out

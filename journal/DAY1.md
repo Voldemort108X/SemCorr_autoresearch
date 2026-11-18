@@ -75,3 +75,4 @@
 - ZROW (pool-adaptive penalty scaling by top-K sim spread) .5/1 → +3.671/+3.666 vs seq11 +3.698: negative.
 - sweeps on seq11: REF_CYC .5 +3.823, REF_SIG 1.5/W4 +3.827, REF_SIG 1/W3 +3.642, REF_SIG 2/W5 +3.580, both combined +3.816 / +3.730 / +3.823 → combinations don't add.
 - seq 14 hypothesis [T4/T1]: refine on the Déjà Vu score map (sim − 0.5·d_cyc/w of every target patch in the window) → +0.12.
+- seq 14 → kept: dev +3.823, val +3.583. T3 seq9 + T3_REF_CYC .5 (sweep dev) +5.282 vs +5.309 → no gain (labels were made with the plain refinement).

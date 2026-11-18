@@ -29,8 +29,8 @@ python scripts/dump_pools.py tlr dev                       # per-candidate cue t
 ```
 
 ## Current best
-- Training-free, seq 7 (commit f6ff781): dev +3.584 vs top1 (dv +0.777); val +3.312 (dv +0.891).
-  Val per-kpt PCK@.10/.05/.01 71.96/56.85/11.92 (top1 68.33/52.39/10.08, dv 69.84/53.38/10.25).
-- Learned re-ranker (T3, trained on SPair trn_train), seq 8 (commit ba7b367): dev +4.753; val +4.557
-  (73.34/58.48/12.64).
-- See results.tsv and journal/STATE.md. Selection on dev (SPair trn subset) only.
+- Training-free, seq 14 (commit fa6e150): dev +3.823 vs top1 (dv +0.777); val +3.583 (dv +0.891).
+  Val per-kpt PCK@.10/.05/.01 72.30/57.14/12.10 (top1 68.33/52.39/10.08, dv 69.84/53.38/10.25).
+- Learned re-ranker (T3, trained on SPair trn_train), seq 9 (commit 3d51e99): val +4.972, TEST +5.230
+  (75.50/61.05/14.05 vs top1 69.78/54.09/11.04, dv 71.22/54.98/11.19).
+- Tables: results.tsv; analyses: journal/analysis_*.md; resume point: journal/STATE.md. Selection on dev only.
