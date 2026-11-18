@@ -95,3 +95,4 @@
   20 steps reg 1 +3.529, reg .1 +3.956, reg .01 +4.245, reg 0 +4.377; 50 steps reg .1 +3.074; reg 0: 10 steps +4.095,
   30 steps +4.039.
 - seq 15 hypothesis [T1, training-free]: seq14 + TTA (20 steps, reg 0) → dev ≈ +4.3–4.8.
+- seq 15 → kept: dev +4.714 (+0.89), val +4.657 (+1.07 vs seq14). Decode 58 ms/pair.

@@ -4,8 +4,11 @@
 - Caches: tlr (dev, val, test, trn_train building), cleandift (val, dev), diysc (val). ~100 GB.
 - Selection = dev (TLR, 5,400 trn pairs). Noise: bootstrap std of Δ vs dv ≈ 0.05–0.12.
 - Reference dev: top1 0, dv +0.777; same-refinement (W2 β.03) baselines: top1 +0.410, dv +1.767 (val +0.250 / +1.610).
-- CURRENT BEST training-free: seq 14 (commit fa6e150) dev +3.823, val +3.583 (decode.py default, T3_MODEL='')
-  = seq 11 + refinement on the cycle-penalised score map (REF_CYC .5).
+- CURRENT BEST training-free: seq 15 (commit 1b0ebde) dev +4.714, val +4.657 (decode.py default, T3_MODEL='')
+  = seq 14 + per-pair test-time channel re-weighting (decode_lib/tta.py: diagonal softplus weights on the descriptor
+  channels, 20 Adam steps (lr .05) maximising the dual-softmax mutual-match confidence of masked src(arm0)/trg; no
+  labels). ~58 ms/pair.
+  seq 14 (fa6e150): dev +3.823, val +3.583, test +3.711; CleanDIFT +3.463, DIY-SC +2.917, SPair-U +1.237, Pascal +3.590, AP-10K +2.709.
   seq 11 (53446e7): dev +3.698, val +3.390, test +3.556; CleanDIFT +3.270, DIY-SC +2.945, SPair-U +0.989, Pascal +3.480, AP-10K +2.676.
   seq 7 (f6ff781; = seq 11 with ARM_PAIR=False): dev +3.584, val +3.312, test +3.457; transfer CleanDIFT +3.158, DIY-SC +2.945.
 - CURRENT BEST T3 (learned on trn_train): seq 9 (commit 3d51e99) dev +5.309 (optimistic: dev shares images with
