@@ -4,9 +4,9 @@ import torch
 import torch.nn.functional as F
 
 
-def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False, hand=0.0, qw=0.0, init=None, return_w=False, sem=0.0, blocknorm=False):
+def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False, hand=0.0, qw=0.0, init=None, return_w=False, sem=0.0, blocknorm=False, nomask=False):
     A = pair['src'][a]
-    X = A['desc'][A['mask']]
+    X = A['desc'] if nomask else A['desc'][A['mask']]
     X2 = pair['src'][1 - a]['desc'][pair['src'][1 - a]['mask']]
     if sem > 0:   # source-side semantic contrast from the annotated keypoints + mirror permutation (no target labels)
         nP = pair['nP']
@@ -26,7 +26,7 @@ def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj=
         pidx = torch.nonzero(A['mask'], as_tuple=True)[0]
         mir = (pidx // nP) * nP + (nP - 1 - pidx % nP)
         Xo, Xm = A['desc'][pidx], pair['src'][1 - a]['desc'][mir]
-    Y = pair['trg']['desc'][pair['trg']['mask']]
+    Y = pair['trg']['desc'] if nomask else pair['trg']['desc'][pair['trg']['mask']]
     if X.shape[0] < 4 or Y.shape[0] < 4:
         return pair
     D = X.shape[1]

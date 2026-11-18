@@ -119,3 +119,5 @@
 - TTA_BLOCKNORM (per-block renormalisation after weighting) +4.103 vs +4.366 (subset): negative.
 - TTA_MIX (mix original and adapted similarities) .5/.75 → +4.140/+4.328 (subset; pure TTA +4.366): negative.
 - seq17 finalist: TEST +4.318, CleanDIFT +4.519, DIY-SC +2.470, SPair-U +1.674, Pascal +3.825, AP-10K +3.562 (seq15: +4.378/+4.593/+2.355/+1.789/+3.977/+3.472) → equivalent within noise.
+- TTA prior weights by block (mean w): s3 1.02, s4 0.78, s5 0.62, DINO 1.10 → TTA mainly down-weights the coarse SD layers (s4/s5) and up-weights DINO; per-pair adaptation adds the rest.
+- TTA_NOMASK (objective over all patches) +3.435 vs +4.366 (subset): masks matter. (First attempt silently did not apply — replacement miss — rerun after fix.)
