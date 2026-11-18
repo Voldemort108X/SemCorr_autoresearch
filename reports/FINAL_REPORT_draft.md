@@ -3,7 +3,18 @@
 Status: DRAFT written on day 1; numbers are filled from `results.tsv` / `runs/*/metrics.json` and will be re-checked
 before the final version (2026-11-23).
 
-## 1. Method (training-free decoder, "DV++", current best = seq 14)
+## 1. Method (training-free decoder, "DV++", current best = seq 15 = seq 14 + test-time adaptation)
+
+**Per-pair test-time channel re-weighting (TTA, label-free).** Before decoding, learn a diagonal weight w ∈ R^D_{>0}
+(w = softplus(θ + 0.5413), θ = 0 → w = 1) shared by all source/target descriptors of the pair, maximising the dual-
+softmax mutual-match confidence of the masked source (original arm) and target descriptors:
+  max_θ  mean_i max_j P_ij + mean_j max_i P_ij,  P = softmax_row(S_w/τ) ⊙ softmax_col(S_w/τ),
+  S_w = norm(F_s ⊙ w) norm(F_t ⊙ w)ᵀ, τ = 0.05, 20 Adam steps (lr 0.05), no regulariser (early stopping by the step
+count). All descriptors (both source arms, target) are re-weighted and re-normalised, then decoded as below.
+Ablation (dev): +0.82 on Déjà Vu alone, +0.93 on Déjà Vu with our refinement, +0.89 on the full decoder (seq 14 → 15);
+grouping channels (64/512 groups), separate source/target weights, a low-rank adapter (collapses), other objectives
+(entropy, soft cycle) or more steps are worse. Cost ≈ 45 ms/pair on a 4090.
+
 
 Notation as in the paper: S = F_s F_tᵀ on the 60×60 grid (masked, dilated object masks), query patch ℓ_i, grid width
 w = 60. Besides the source arm used by the base method's adaptive pose step (original or horizontally flipped source,
