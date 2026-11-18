@@ -14,3 +14,6 @@
 [prepare] tlr person feat=False splits=['trn_train'] 221s
 [prepare] tlr pottedplant feat=False splits=['trn_train'] 207s
 [prepare] tlr sheep feat=False splits=['trn_train'] 284s
+[prepare] tlr train feat=False splits=['trn_train'] 222s
+[prepare] tlr tvmonitor feat=False splits=['trn_train'] 234s
+[prepare] done

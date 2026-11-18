@@ -1,14 +1,14 @@
 # STATE (resume point; update at the end of every iteration)
 
-- Phase: Day-0 setup DONE for TLR (2026-11-18 05:20 UTC); CleanDIFT cache (val,dev) building; DIY-SC cache next.
-  Sanity gate TLR/val PASSED (top1 / lam0.5 within ±0.005 PCK of the review dumps; 0 flip-arm mismatches).
-- Loop: started. Selection = dev (TLR, 5,400 pairs from SPair trn, seed 0+cat index), metric `dev` (prepare.py).
-- Reference (dev, per kpt @.10/.05/.01): top1 68.19/52.06/9.66, dv 69.58/52.93/9.74 (dev +0.777),
-  or5 75.89, or10 80.15, or30 87.16.
-- Current best: dv baseline (dev +0.777).
-- Tools: `bash scripts/run.sh <seq> [split] [method]`; `scripts/dump_pools.py` (cue tables of the top-30 pool + per-
-  candidate GT error -> cache/<m>/<split>/pools*.npz) + `scripts/offline.py` / `analyze_pools.py` for fast offline
-  screening of re-ranking rules (screen on dev only; every claimed number must come from run.sh).
-- Running: dump_pools tlr dev.
-- Next: (1) failure analysis on full dev pools; (2) T2 cues screen (consensus RANSAC over pools, MLS, context,
-  handedness) on full dev; (3) T3 listwise re-ranker on trn_train cue tables if single cues fail.
+- Phase: LOOP (Day 1). Setup done 2026-11-18 ~05:20 UTC; sanity gates passed for tlr / cleandift / diysc (val).
+- Caches: tlr (dev, val, test, trn_train building), cleandift (val, dev), diysc (val). ~100 GB.
+- Selection = dev (TLR, 5,400 trn pairs). Noise: bootstrap std of Δ vs dv ≈ 0.05–0.12.
+- Reference dev: top1 0, dv +0.777; same-refinement (W2 β.03) baselines: top1 +0.410, dv +1.767 (val +0.250 / +1.610).
+- CURRENT BEST: seq 5 (commit 0e76374) dev +3.251, val +3.036
+  = flip-ensembled forward row (NOM_ENS .75) + Déjà Vu cycle (λ .5) + other-arm cycle (.25) + consensus-RANSAC residual
+    (μ .5, cap 5) + refinement window 2 / β .03 on (own + .5·other-arm) map.
+  Transfer of seq 4 (val): CleanDIFT +1.963 (dv +0.700), DIY-SC +2.805 (dv +0.240). seq 5 transfer not run yet.
+- Running: sweep5 (K, REF_ENS, LAM, MU on seq5) → runs/logs/sweep5.log; prepare trn_train (tlr) → runs/logs/prepare_trn_train.log.
+- Next: (1) pick from sweep5; (2) seq5 transfer (cleandift/diysc val); (3) T3 listwise re-ranker on trn_train cue
+  tables (dump_pools for trn_train subset); (4) estimated symmetry partner for keypoints w/o annotated counterpart;
+  (5) daily report at ~04:00 2026-11-19.
