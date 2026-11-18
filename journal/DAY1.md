@@ -81,3 +81,7 @@
 - T3 with labels/features under the REF_CYC refinement (A/B protocol): B-set mean PCK 49.64 vs 49.83 for the plain-refinement model → no gain; T3 stays seq9.
 - Runtime (test, ms/pair, decode only, RTX 4090 shared): top1/dv 2.8, seq7 7.0, seq11 10.9, seq14 14.8, seq8 T3 9.7, seq9 T3 17.8.
 - T3 two-arm pool (60 candidates: 30 per source arm, arm features; decode_lib/twoarm.py, scripts/dump_t3_2arm.py), A/B protocol: B-set PCK 74.92/60.80/13.41 (mean 49.71) vs one-arm x2 75.46/60.98/13.05 (49.83) → no gain; the arm-oracle headroom is not learnable from these cues either.
+- Leave-one-out ablation of seq14 (dev +3.823): −flip-ensembled row (NOM_ENS 0) +3.392 (−0.43); −other-arm cycle
+  +3.738 (−0.09); −consensus +3.538 (−0.29); −reverse rank +3.505 (−0.32); −ensembled refinement map +3.513 (−0.31);
+  −cycle-penalised refinement +3.698 (−0.13); −ARM_PAIR +3.675 (−0.15); base refinement (W5 β.01) +2.949 (−0.87);
+  −Déjà Vu cycle (λ 0) +3.310 (−0.51).

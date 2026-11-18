@@ -20,7 +20,10 @@
 - Generalisation (settings from dev): SPair-U test (no perm → no flip-ensemble): dv +0.51, dvW2 +0.50, seq7 +0.99, seq8 +1.45.
   PF-Pascal (PCK .10/.05/.15 @840px): top1 86.50/73.57/91.30, dv 89.44/75.93/93.70, seq7 90.31/77.38/94.12, seq8 91.59/78.33/95.44.
   AP-10K CF test: top1 53.30/36.26/7.10, dv +0.56, dvW2 +1.30, seq7 +2.50 (55.78/39.05/9.33), seq8 +3.17 (56.59/39.90/9.67).
-- Running: sweep SD_W (block reweighting) on seq7; transfer of seq8 (cleandift/diysc val).
-- Next: (1) analysis step (seq ~10): errors of seq7/seq8 by type & category; (2) daily report 2026-11-19 ~04:00 UTC
-  (+ git push); (3) test split + SPair-U / AP-10K generalization for finalists (day 4-5); (4) more training-free ideas:
-  block reweighting, multi-hop cycle, per-keypoint arm self-selection (protocol deviation: flag it).
+- Running: ablation_dev3 (no-flip / dvW2-equivalent) → runs/logs/ablation_dev3.log.
+- Tracks so far: T1/T4 training-free saturated (~25 variants within noise, see DAY1.md); T2 consensus is the only
+  geometry piece that helps; T3 saturated at ≈ +1.7 over seq5 on the image-disjoint A/B protocol (two-arm pool, joint
+  attention, bigger models, rc labels, perm-drop: no gain).
+- Next: (1) daily report reports/daily_2026-11-19.md at ~04:00 UTC → update with seq11/14/9 numbers + ablation, commit
+  results.tsv, git push origin autoresearch/nov18, PushNotification; (2) final report draft reports/FINAL_REPORT_draft.md;
+  (3) new evidence sources (only the flip-ensemble was a big training-free lever) — ideas: none strong yet.
