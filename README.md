@@ -19,5 +19,17 @@ read-only inputs.
 | `journal/` | `STATE.md` (resume point), `ideas.md`, `DAY<n>.md`, `analysis_<seq>.md` |
 | `reports/` | daily summaries and `FINAL_REPORT.md` |
 
+## How to run
+```
+python prepare.py --method tlr --split dev,val,test        # cache (once; ~2.5 min/category)
+bash scripts/run.sh <seq> [dev|val|test] [tlr|cleandift|diysc]   # evaluates decode.py -> runs/<seq>_<commit>[...]/
+python scripts/sanity.py tlr val                           # sanity gate vs. the review dumps
+python scripts/sweep.py dev "NAME=val,..." ...             # decode.py with overridden constants (no files written)
+python scripts/dump_pools.py tlr dev                       # per-candidate cue tables for offline screening
+```
+
 ## Current best
-(not started yet)
+seq 4 (commit 61c2572): Déjà Vu + flip-ensembled forward row (nomination / similarity) + other-arm cycle +
+pair-level consensus-RANSAC residual + refinement on the flip-ensembled map.
+dev (TLR, selection): +2.191 vs top1 (dv +0.777); val: +2.123 (dv +0.891).
+Per-kpt PCK@.10/.05/.01 val: 71.54/54.84/10.79 (top1 68.33/52.39/10.08, dv 69.84/53.38/10.25).
