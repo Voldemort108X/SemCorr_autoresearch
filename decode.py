@@ -15,6 +15,7 @@ Current: Deja Vu unary (top-p pool, S - lam d_cyc / w) + pair-level consensus re
   RANSAC over the query keypoints' candidate pools fits a similarity transform T (2-point hypotheses from the
   top-5 candidates by unary, support = rank-discounted inlier count, thr 6 patches, refit affine on inliers);
   R = S - lam d_cyc / w - mu * min(|c - T(q)|, cap) / w.
++ flip-ensemble (other source arm; see flip_ensemble) in the score and in the window soft-argmax refinement map.
 """
 import torch
 from vendor import core as C
@@ -25,6 +26,7 @@ LAM = 0.5
 MU, CAP, THR, MODEL = 0.5, 5.0, 6.0, 'sim'
 WFL, LFL = 0.5, 0.25          # flip-ensemble: weight of the other-arm similarity and of its cycle distance
 K = 30
+WIN, BETA, REF_ENS = 5, 0.01, 0.5   # refinement: window, softmax beta, weight of the other-arm map in the refinement
 
 
 def decode_arm(pair, a):
@@ -48,7 +50,8 @@ def decode_arm(pair, a):
     u = topk_sim - LAM * d_cyc / nP
     score = u
     if WFL > 0 or LFL > 0:
-        score = score + flip_ensemble(pair, a, st, pid, d_cyc, topk_sim)
+        fe, fl_map = flip_ensemble(pair, a, st, pid, d_cyc, topk_sim)
+        score = score + fe
     if MU > 0:
         valid = A['kp_valid'][st.valid_kpt_indices]
         g = torch.Generator(device=st.device)
@@ -58,7 +61,10 @@ def decode_arm(pair, a):
     score = score.masked_fill(~in_pool, -1e9)
     best = score.argmax(1)
     bp = pid.gather(1, best[:, None])[:, 0]
-    nx, ny = C.window_soft_argmax(st, bp // nP, bp % nP, 5, 0.01)
+    s2d = st.full_sim_2d
+    if REF_ENS > 0:
+        s2d = (s2d + REF_ENS * fl_map) / (1 + REF_ENS)
+    nx, ny = C.window_soft_argmax_2d(s2d, bp // nP, bp % nP, WIN, BETA, st.anno_stride)
     out[st.valid_kpt_indices] = torch.stack([nx, ny], 1)
     return out
 
@@ -88,7 +94,11 @@ def flip_ensemble(pair, a, st, pid, d_cyc, topk_sim):
     okk = ok.unsqueeze(1).expand_as(sfl)
     sfl = torch.where(okk, sfl, topk_sim)
     dfl = torch.where(okk, dfl, d_cyc)
-    return WFL * sfl - LFL * dfl / nP
+    fl_map = None
+    if REF_ENS > 0:   # other-arm similarity map of the semantic keypoint over all target patches (own map where not ok)
+        fm = (O['desc'][lo] @ pair['trg']['desc'].t()).masked_fill(~pair['trg']['mask'].unsqueeze(0), -float('inf'))
+        fl_map = torch.where(ok.view(-1, 1, 1), fm.view(-1, nP, nP), st.full_sim_2d)
+    return WFL * sfl - LFL * dfl / nP, fl_map
 
 
 def decode(pair):

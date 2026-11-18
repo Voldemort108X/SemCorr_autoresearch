@@ -19,3 +19,4 @@
 - seq 1 hypothesis [T2]: adding μ·min(resid to the pair-level consensus similarity transform, 5)/w (μ 0.5) to Déjà Vu
   fixes part of the mirror / other-kp swaps → dev ≈ +1.1 (offline +1.136).
 - seq 2 hypothesis [T1/T4]: flip-ensemble — score the candidate also against the same semantic keypoint in the other source arm (mirrored counterpart) + its cycle there (WFL 0.5, LFL 0.25) → dev ≈ +1.37 (offline).
+- seq 3 hypothesis [T4]: refine with the flip-ensembled similarity map (own + 0.5·other-arm map of the same semantic kp) → better localisation at all thresholds (sweep: dev +2.04).
