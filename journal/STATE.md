@@ -8,10 +8,12 @@
   = flip-ensembled forward row (NOM_ENS .75) + Déjà Vu cycle (λ .5) + other-arm cycle (.25) + consensus-RANSAC residual
     (μ .5, cap 5) + reverse-rank penalty (.02 log1p) + refinement window 2 / β .03 on (own + .5·other-arm) map.
     (= decode.py with T3_MODEL='')
-- CURRENT BEST T3 (learned on trn_train): seq 8 (commit ba7b367) dev +4.753, val +4.557 — DeepSets re-ranker on the
-  seq-5 pool with 31 features; model runs/t3_models/x_full_60_128.pt (gitignored; rebuild: T3_EXTRA=1 python
-  scripts/dump_t3.py trn_train 0 && python -c "from decode_lib import t3; t3.train('cache/tlr/trn_train/t3_x.npz',
-  'runs/t3_models/x_full_60_128.pt', 60, 'cache/tlr/dev/t3_x.npz', h=128)").
+- CURRENT BEST T3 (learned on trn_train): seq 9 (commit 3d51e99) dev +5.309 (optimistic: dev shares images with
+  trn_train), val +4.972, TEST +5.230 (75.50/61.05/14.05); transfer val CleanDIFT +4.882, DIY-SC +3.657.
+  DeepSets re-ranker on the seq-5 pool, 64 features (T3_EXTRA=2), h128 60 ep; model runs/t3_models/x2_full_60_128.pt
+  (rebuild: T3_EXTRA=2 python scripts/dump_t3.py trn_train 0; python -c "from decode_lib import t3;
+  t3.train('cache/tlr/trn_train/t3_x2.npz','runs/t3_models/x2_full_60_128.pt',60,'cache/tlr/dev/t3_x2.npz',h=128)").
+  T3 model selection MUST use the image-disjoint A/B protocol (decode_lib/t3split.py; tables t3_x2_A / t3_x2_B).
 - Same-refinement baselines (W2 β.03 own map): top1 dev +0.410 / val +0.250 / test +0.379; dv dev +1.767 / val +1.610 / test +1.750.
 - TEST (selected on dev): top1 69.78/54.09/11.04, dv 71.22/54.98/11.19, seq7 73.57/58.51/13.21 (+3.457), seq8 74.97/60.42/13.90 (+4.791).
 - Generalisation (settings from dev): SPair-U test (no perm → no flip-ensemble): dv +0.51, dvW2 +0.50, seq7 +0.99, seq8 +1.45.

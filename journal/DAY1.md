@@ -59,3 +59,10 @@
 - PROF (relational profile correlation) .02/.05/.1 → +3.53/+3.48/+3.40: negative. AP-10K CF (test): dv +0.56, dvW2 +1.30, seq7 +2.50, seq8 +3.17.
 - seq 9 hypothesis [T3]: x2 features (+ 5x5 ring of the refinement map, own-map 3x3, query self-similarity to its mirror partner / far source patches, object-relative positions of query and candidate, 2-hop cycle, target mask fraction; 64 feats) → offline +2.07 over seq5 → dev ≈ +5.3.
 - DENSE (T2 dense-flow prior: local median displacement of cycle-consistent dense Déjà Vu matches) μ.5 R6 +3.60, μ.5 R10 +3.52, μ1 R4 +3.49 → no gain. seq 9 → kept (T3): dev +5.309, val +4.972, TEST +5.230 (75.50/61.05/14.05).
+- !! T3 caveat found: SPair trn/val/test use disjoint images, but dev ⊂ trn shares ALL its images with trn_train
+  (T3 training data). Bigger T3 models looked much better on dev (h256/100ep +2.82, h512/150ep +3.25 over seq5 vs
+  h128/60ep +2.07) but on an image-disjoint protocol (decode_lib/t3split.py: train on trn_train pairs inside image
+  half A, select on dev pairs inside half B) they are equal: h128 +1.72, h512 +1.68, h256 +1.64. → memorisation.
+  Keep h128/60 (seq 9). From now on T3 choices use the A/B protocol; T3 dev numbers are optimistic, val/test are
+  image-disjoint and trustworthy (seq9 val +4.972 / test +5.230 vs seq7 +3.312 / +3.457).
+- seq9 transfer (val): CleanDIFT +4.882 (dv +0.700), DIY-SC +3.657 (dv +0.240).
