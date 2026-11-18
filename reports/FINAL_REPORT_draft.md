@@ -55,3 +55,29 @@ with an image-disjoint protocol (dev shares images with SPair trn; val/test do n
 
 ## 3. Results (to be completed)
 See `results.tsv`; tables generated with `scripts/tables.py`.
+
+### 3.1 SPair-71k (TLR features), per-keypoint PCK@0.10/0.05/0.01, selected on dev (SPair trn subset)
+| decoder | track | dev Δ | val Δ | test PCK | test Δ |
+|---|---|---|---|---|---|
+| top-1 (base refinement W5 β.01) | – | 0 | 0 | 69.78/54.09/11.04 | 0 |
+| Déjà Vu λ0.5 (paper) | – | +0.78 | +0.89 | 71.22/54.98/11.19 | +0.82 |
+| top-1, refinement W2 β.03 | – | +0.41 | +0.25 | 69.32/54.48/12.25 | +0.38 |
+| Déjà Vu, refinement W2 β.03 | – | +1.77 | +1.61 | 71.28/56.26/12.62 | +1.75 |
+| DV++ w/o TTA (seq 14) | training-free | +3.82 | +3.58 | 73.81/58.90/13.34 | +3.71 |
+| **DV++ (seq 17)** | training-free | **+4.71** | **+4.56** | **74.08/59.64/14.15** | **+4.32** |
+| DV++ + REF_CYC (seq 15) | training-free | +4.71 | +4.66 | 74.16/59.74/14.15 | +4.38 |
+| T3 re-ranker on DV++ pool, no TTA (seq 9) | learned | (+5.31) | +4.97 | 75.50/61.05/14.05 | +5.23 |
+| **T3 + TTA (seq 16)** | learned | (+6.27) | **+6.09** | **76.06/62.00/14.83** | **+5.99** |
+| oracle top-5 / top-30 (base refinement) | – | | | 77.11/59.68/12.23 / 87.46/70.27/15.86 | |
+Dev numbers of learned decoders in parentheses: dev shares images with their training pairs.
+
+### 3.2 Transfer (val; all settings fixed from TLR dev) and generalisation (test)
+| | CleanDIFT val | DIY-SC val | SPair-U | PF-Pascal (.10/.05/.15) | AP-10K CF |
+|---|---|---|---|---|---|
+| Déjà Vu | +0.70 | +0.24 | +0.51 | 89.44/75.93/93.70 (+2.57) | +0.56 |
+| DV++ w/o TTA (seq 14) | +3.46 | +2.92 | +1.24 | 90.31/77.55/94.28 (+3.59) | +2.71 |
+| DV++ (seq 17) | +4.52 | +2.47 | +1.67 | (+3.83) | +3.56 |
+| T3 (seq 9) | +4.88 | +3.66 | +0.98 | 90.85/77.42/94.99 (+3.96) | +3.46 |
+| T3 + TTA (seq 16) | +5.86 | +2.82 | +2.03 | 90.64/77.38/95.03 (+3.89) | +4.20 |
+Δ = mean ΔPCK vs top-1 over the three thresholds (PF-Pascal: .10/.05/.15 w.r.t. 840 px).
+Observation: TTA helps every foundation-feature setting but hurts the supervised DIY-SC features (−0.5 vs seq 14).
