@@ -26,6 +26,25 @@ def other_arm_kp(pair, a, st):
     return (k0[jc] // nP) * nP + (nP - 1 - k0[jc] % nP), v0[jc] & (j >= 0)
 
 
+def mixed_pool(st, row, ktop, kpeak, r=1):
+    """top-ktop patches by the row + the kpeak highest 3x3-NMS local maxima not already included (valid-target idx)."""
+    nP = st.num_patches
+    M = row.shape[0]
+    full = torch.full((M, nP * nP), -10.0, device=st.device)
+    full[:, st.tgt_valid_idx] = row
+    mp = torch.nn.functional.max_pool2d(full.view(M, 1, nP, nP), 2 * r + 1, 1, r).view(M, -1)
+    top = full.topk(ktop, dim=1)[1]
+    pk = full.masked_fill(~((full >= mp) & (full > -9)), -10.0)
+    pk = pk.scatter(1, top, -10.0)                     # exclude those already in the top list
+    pv, pp = pk.topk(kpeak, dim=1)
+    fill = full.scatter(1, top, -10.0).topk(kpeak, dim=1)[1]
+    pp = torch.where(pv > -9, pp, fill)
+    sel = torch.cat([top, pp], 1)
+    inv = torch.zeros(nP * nP, dtype=torch.long, device=st.device)
+    inv[st.tgt_valid_idx] = torch.arange(st.tgt_valid_idx.numel(), device=st.device)
+    return inv[sel]
+
+
 def arm_candidates(pair, a, cfg=CFG, with_feats=True, extra=False):
     A = pair['src'][a]
     st = C.PairState(A['desc'], pair['trg']['desc'], A['kp'], A['mask'], pair['trg']['mask'])
@@ -44,6 +63,9 @@ def arm_candidates(pair, a, cfg=CFG, with_feats=True, extra=False):
     _, _, _, cutoff_k = C.nominate(st, max_k=cfg['K'])
     si, _ = st.sorted_by_temperature(0.1)
     topk_idx = si[:, :min(cfg['K'], si.shape[1])]
+    if cfg.get('PEAKS', 0) > 0 and topk_idx.shape[1] == cfg['K']:   # replace the tail of the pool by NMS peaks
+        topk_idx = mixed_pool(st, row, cfg['K'] - cfg['PEAKS'], cfg['PEAKS'])
+        cutoff_k = torch.full_like(cutoff_k, topk_idx.shape[1])
     topk = torch.gather(row, 1, topk_idx)
     Kc = topk_idx.shape[1]
     in_pool = torch.arange(Kc, device=st.device).unsqueeze(0) < cutoff_k.unsqueeze(1)

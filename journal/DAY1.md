@@ -85,3 +85,13 @@
   +3.738 (−0.09); −consensus +3.538 (−0.29); −reverse rank +3.505 (−0.32); −ensembled refinement map +3.513 (−0.31);
   −cycle-penalised refinement +3.698 (−0.13); −ARM_PAIR +3.675 (−0.15); base refinement (W5 β.01) +2.949 (−0.87);
   −Déjà Vu cycle (λ 0) +3.310 (−0.51).
+- No flip components at all (NOM_ENS 0, LFL 0, REF_ENS 0): dev +2.813 (−1.01 vs seq14).
+- REF_UP (bilinear up-sampled refinement map, soft-argmax on finer grid) u2 +3.239, u4 +3.386, u4 β.02 +3.653, u4 β.01 +3.739, u4 β.005 W1 +3.443 vs seq14 +3.823 → negative.
+- T3 with a mixed pool (top-20 patches + 10 NMS peaks): pool oracle @.10 97.5 vs 94.6 (but @.01 31.4 vs 35.2); A/B B-set mean 49.57 vs 49.83 → negative.
+- ENS_MIN (soft-AND disagreement penalty between the two query views) .1/.25/.5 → +3.832/+3.737/+3.309: negative.
+- NEW: per-pair test-time channel re-weighting (decode_lib/tta.py; label-free): w ∈ R^D (softplus, init 1) maximising
+  the dual-softmax mutual-match confidence (τ .05) of the masked source(arm 0)/target descriptors, Adam lr .05; applied to
+  both source arms and the target, then the seq-14 decoder. Subset dev (aeroplane, cat, chair, horse; seq14 = +3.386):
+  20 steps reg 1 +3.529, reg .1 +3.956, reg .01 +4.245, reg 0 +4.377; 50 steps reg .1 +3.074; reg 0: 10 steps +4.095,
+  30 steps +4.039.
+- seq 15 hypothesis [T1, training-free]: seq14 + TTA (20 steps, reg 0) → dev ≈ +4.3–4.8.

@@ -32,6 +32,9 @@ SWAP_T = -1.0    # mirror-pair orientation test: swap the two predictions of a m
 K_PEAK, R_NMS, K_TOP = 0, 1, 0   # peak pool: K_PEAK local maxima (NMS radius R_NMS) of the forward row + top K_TOP patches
 DENSE_MU, DENSE_R = 0.0, 6.0   # dense-flow residual weight / source radius (patches)
 REF_CYC, REF_SIG = 0.5, 0.0   # refinement on sim - REF_CYC*d_cyc/w ; Gaussian window prior sigma (patches)
+TTA_STEPS, TTA_REG = 20, 0.0   # per-pair test-time channel re-weighting (label-free)
+ENS_MIN = 0.0    # flip-ensemble disagreement penalty
+REF_UP = 1       # refinement map up-sampling factor (1 = off)
 HAND2 = 0.0      # mirror-pair handedness direction weight
 REF_CONS = 0.0   # refinement map also penalised by mu * min(dist to consensus prediction, cap)
 ZROW = 0.0       # pool-adaptive penalty scaling exponent (0 = off)
@@ -57,7 +60,10 @@ def decode_arm(pair, a):
         lo, ok = other_arm_kp(pair, a, st)
         O = pair['src'][1 - a]
         fr = O['desc'][lo] @ st.img2_valid.t()                              # [M, Pt]
-        row = torch.where(ok.unsqueeze(1), (st.sim_kpts + NOM_ENS * fr) / (1 + NOM_ENS), st.sim_kpts)
+        ens = (st.sim_kpts + NOM_ENS * fr) / (1 + NOM_ENS)
+        if ENS_MIN > 0:   # penalise disagreement of the two views (soft AND)
+            ens = ens - ENS_MIN * (st.sim_kpts - fr).abs()
+        row = torch.where(ok.unsqueeze(1), ens, st.sim_kpts)
         st.sim_kpts = row
         st._sorted_cache = {}
     if K_PEAK > 0:
@@ -187,7 +193,17 @@ def decode_arm(pair, a):
         xx = torch.arange(nP, device=st.device).view(1, 1, nP).float()
         d2 = (yy - (bp // nP).view(-1, 1, 1).float()) ** 2 + (xx - (bp % nP).view(-1, 1, 1).float()) ** 2
         s2d = s2d - BETA * d2 / (2 * REF_SIG ** 2)
-    nx, ny = C.window_soft_argmax_2d(s2d, bp // nP, bp % nP, WIN, BETA, st.anno_stride)
+    if REF_UP > 1:   # bilinear up-sampled map, soft-argmax on the finer grid
+        u = REF_UP
+        m2 = s2d.clamp(min=-2.0).unsqueeze(1)
+        mf = torch.nn.functional.interpolate(m2, scale_factor=u, mode='bilinear', align_corners=False)[:, 0]
+        tm = st.tgt_mask.view(1, 1, nP, nP).float()
+        tmf = torch.nn.functional.interpolate(tm, scale_factor=u, mode='nearest')[0, 0] > 0
+        mf = mf.masked_fill(~tmf.unsqueeze(0), -float('inf'))
+        nx, ny = C.window_soft_argmax_2d(mf, (bp // nP) * u + u // 2, (bp % nP) * u + u // 2, WIN * u + u // 2, BETA,
+                                         st.anno_stride / u)
+    else:
+        nx, ny = C.window_soft_argmax_2d(s2d, bp // nP, bp % nP, WIN, BETA, st.anno_stride)
     if REF_MODE != 'soft':
         qx, qy = quad_refine(s2d, bp // nP, bp % nP, st.anno_stride)
         if REF_MODE == 'quad':
@@ -424,6 +440,10 @@ def force_arm(pair, a):
 def decode(pair):
     if SD_W != 1.0:
         pair = reweight(pair, SD_W)
+    if TTA_STEPS > 0:
+        from decode_lib.tta import adapt_pair
+        with torch.enable_grad():
+            pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG)
     if FORCE_ARM >= 0:
         pair = force_arm(pair, FORCE_ARM)
     elif ARM_PAIR:   # decode ALL keypoints in the arm chosen for the pair (arm-1 queries rebuilt from source info)
