@@ -7,6 +7,7 @@ c=$(git rev-parse --short HEAD)
 d=runs/${seq}_${c}
 [ "$method" != tlr ] && d=${d}_${method}
 [ "$split" != dev ] && d=${d}_${split}
+[ -n "$TAG" ] && d=${d}_${TAG}
 mkdir -p $d
 export PYTHONDONTWRITEBYTECODE=1
 timeout ${TIMEOUT:-600} python scripts/run_exp.py $seq $split $method $d > $d/run.log 2>&1

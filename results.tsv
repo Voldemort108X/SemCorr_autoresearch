@@ -19,3 +19,8 @@ ref-dv-W2b03	0e76374	1.610	1.48	2.13	1.22	69.81	54.52	11.30	-	ref	ref	dv-W with 
 6	cd722bf	3.923	4.49	5.11	2.17	73.37	58.10	12.33	204	T3	transfer	seq6 (T3, TLR-trained) transfer CleanDIFT val [vs_dv +3.223 std 0.129; split val/cleandift]
 6	cd722bf	2.682	2.77	3.63	1.65	76.49	60.73	12.94	115	T3	transfer	seq6 (T3, TLR-trained) transfer DIY-SC val [vs_dv +2.442 std 0.123; split val/diysc]
 7	f6ff781	3.584	3.92	4.61	2.22	72.12	56.67	11.87	204	T1	keep	training-free: seq5 + reverse-rank penalty 0.02*log1p(rank of query in own column) [vs_dv +2.807 std 0.109; split dev/tlr]
+8	ba7b367	4.753	5.18	6.33	2.75	73.37	58.39	12.41	187	T3	keep	T3 reranker + extended feats (competition, local 3x3 shape), full trn_train, h128 60ep (runs/t3_models/x_full_60_128.pt) [vs_dv +3.975 std 0.129; split dev/tlr]
+7	f6ff781	3.158	3.60	4.00	1.88	72.48	56.99	12.03	-	T4	transfer	seq7 (training-free) transfer CleanDIFT val [vs_dv +2.458; sweep.py T3_MODEL='' with decode.py at seq7 (RR .02)]
+7	f6ff781	2.945	3.11	4.15	1.57	76.83	61.25	12.87	-	T4	transfer	seq7 (training-free) transfer DIY-SC val [vs_dv +2.705; sweep.py T3_MODEL='' with decode.py at seq7 (RR .02)]
+8	ba7b367	4.365	4.99	5.67	2.44	73.87	58.65	12.60	196	T3	transfer	seq8 (T3, TLR-trained) transfer cleandift val [vs_dv +3.665 std 0.131; split val/cleandift]
+8	acd073d	3.135	3.20	4.36	1.84	76.92	61.46	13.14	107	T3	transfer	seq8 (T3, TLR-trained) transfer DIY-SC val (commit acd073d = seq8 + inert SD_W option) [vs_dv +2.896 std 0.131; split val/diysc]

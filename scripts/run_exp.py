@@ -13,6 +13,10 @@ import decode as D
 seq, split = sys.argv[1], sys.argv[2]
 method = sys.argv[3] if len(sys.argv) > 3 else 'tlr'
 out = sys.argv[4] if len(sys.argv) > 4 else None
+for kv in filter(None, os.environ.get('OVR', '').split(',')):   # e.g. OVR="T3_MODEL=" (logged in run.log)
+    k, v = kv.split('=')
+    setattr(D, k, type(getattr(D, k))(v))
+    print(f'override {k}={v!r}')
 if hasattr(D, 'setup'):
     D.setup(method=method, split=split)
 P.evaluate(D.decode, method, split, out_dir=out)
