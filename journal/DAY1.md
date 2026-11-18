@@ -31,3 +31,10 @@
   W3 β.03 +2.80, W2 β.02 +3.22, W2 β.03 +3.25, W2 β.05 +3.00, W1 β.02 +3.05, W4 β.02 +2.50. Analysis: journal/analysis_4.md.
 - seq 5 hypothesis [T4]: refinement window 2 / β 0.03 (on the ensembled map) → dev ≈ +3.25. Baselines with the same
   refinement to be measured (fairness).
+- seq 5 → kept: dev +3.251, val +3.036. Fair baselines (same W2/β.03 refinement, own map): top1 dev +0.410 / val +0.250,
+  dv dev +1.767 / val +1.610 → decoder-only gain over dv ≈ +1.48 dev / +1.43 val.
+- sweep5 on seq5 (dev): K 10 +3.16, K 20 +3.23, REF_ENS 1.0 +3.23, λ 1.0 +3.30, μ 1.0 +3.03 → all within noise; keep seq5.
+- T3 setup: decode_lib/feats.py (seq-5 candidates + 19 category-agnostic features; reproduces seq5 exactly),
+  scripts/dump_t3.py (tables with per-candidate refined GT error), decode_lib/t3.py (DeepSets listwise MLP,
+  expected-metric-gain loss). trn_train cache built (48k pairs); dumping 600 pairs/category for training.
+- seq 6 hypothesis [T3]: DeepSets listwise re-ranker (19 cue features, h64, 60 ep, trained on 600 trn_train pairs/cat, 13 s) on the seq-5 pool → dev ≈ +4.4 (offline table: +1.19 over seq5).

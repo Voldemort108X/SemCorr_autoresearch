@@ -112,10 +112,38 @@ def flip_ensemble(pair, a, st, pid, d_cyc, topk_sim):
     return WFL * sfl - LFL * dfl / nP, fl_map
 
 
+T3_MODEL = 'runs/t3_models/m_60_64.pt'   # '' = training-free (seq 5); else path of a decode_lib.t3 model (track T3, trained on SPair trn_train)
+_T3 = {}
+
+
+def decode_arm_t3(pair, a):
+    from decode_lib import feats as FT, t3
+    if T3_MODEL not in _T3:
+        _T3[T3_MODEL] = t3.load_model(T3_MODEL)
+    N = pair['src'][a]['kp'].numel()
+    out = torch.zeros(N, 2, device='cuda')
+    st, o = FT.arm_candidates(pair, a)
+    if o is None:
+        return out
+    s = _T3[T3_MODEL](o['F'], o['in_pool'])
+    nx, ny = FT.refine(st, o, s.argmax(1))
+    out[st.valid_kpt_indices] = torch.stack([nx, ny], 1)
+    return out
+
+
 def decode(pair):
     arm = pair['arm_of_kpt']
-    pred = decode_arm(pair, 0)
+    f = decode_arm_t3 if T3_MODEL else decode_arm
+    pred = f(pair, 0)
     if bool((arm == 1).any()):
-        p1 = decode_arm(pair, 1)
+        p1 = f(pair, 1)
         pred[arm == 1] = p1[arm == 1]
     return pred
+
+
+if __name__ == '__main__':   # python decode.py --train <out.pt> [epochs]: T3 training on trn_train tables (<10 min)
+    import sys
+    if sys.argv[1] == '--train':
+        from decode_lib import t3
+        t3.train('cache/tlr/trn_train/t3_n600.npz', sys.argv[2], int(sys.argv[3]) if len(sys.argv) > 3 else 60,
+                 'cache/tlr/dev/t3.npz')
