@@ -83,7 +83,7 @@ def decode_arm(pair, a):
         pen_scale = 1.0
     u = topk_sim - pen_scale * LAM * d_cyc / nP
     score = u
-    if WFL > 0 or LFL > 0:
+    if WFL > 0 or LFL > 0 or REF_ENS > 0:
         fe, fl_map = flip_ensemble(pair, a, st, pid, d_cyc, topk_sim)
         score = score + fe * (pen_scale if WFL == 0 else 1.0)
     if DENSE_MU > 0:   # T2 dense flow: local median displacement of cycle-consistent dense Deja Vu matches

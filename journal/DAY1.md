@@ -76,3 +76,8 @@
 - sweeps on seq11: REF_CYC .5 +3.823, REF_SIG 1.5/W4 +3.827, REF_SIG 1/W3 +3.642, REF_SIG 2/W5 +3.580, both combined +3.816 / +3.730 / +3.823 → combinations don't add.
 - seq 14 hypothesis [T4/T1]: refine on the Déjà Vu score map (sim − 0.5·d_cyc/w of every target patch in the window) → +0.12.
 - seq 14 → kept: dev +3.823, val +3.583. T3 seq9 + T3_REF_CYC .5 (sweep dev) +5.282 vs +5.309 → no gain (labels were made with the plain refinement).
+- REF_CONS (consensus-distance in the refinement map) .5/1 → +3.769/+3.478: negative. HAND2 (mirror-pair handedness direction from 4 source views: raw + mirrored per side) .05/.2/.5 → +3.851/+3.897/+3.801 (+0.07 max, noise); error types: mirror 6.75 → 6.59 (.2) → 6.47 (1.0) but other-kp 11.44 → 12.08: weak signal, not kept.
+- seq14 finalist: TEST +3.711 (73.81/58.90/13.34), CleanDIFT val +3.463, DIY-SC val +2.917, SPair-U +1.237, Pascal +3.590, AP-10K +2.709.
+- T3 with labels/features under the REF_CYC refinement (A/B protocol): B-set mean PCK 49.64 vs 49.83 for the plain-refinement model → no gain; T3 stays seq9.
+- Runtime (test, ms/pair, decode only, RTX 4090 shared): top1/dv 2.8, seq7 7.0, seq11 10.9, seq14 14.8, seq8 T3 9.7, seq9 T3 17.8.
+- T3 two-arm pool (60 candidates: 30 per source arm, arm features; decode_lib/twoarm.py, scripts/dump_t3_2arm.py), A/B protocol: B-set PCK 74.92/60.80/13.41 (mean 49.71) vs one-arm x2 75.46/60.98/13.05 (49.83) → no gain; the arm-oracle headroom is not learnable from these cues either.
