@@ -119,7 +119,7 @@ def flip_ensemble(pair, a, st, pid, d_cyc, topk_sim):
     return WFL * sfl - LFL * dfl / nP, fl_map
 
 
-T3_MODEL = ''   # '' = training-free (seq 5); else path of a decode_lib.t3 model (track T3, trained on SPair trn_train)
+T3_MODEL = 'runs/t3_models/x_full_60_128.pt'   # '' = training-free (seq 5); else path of a decode_lib.t3 model (track T3, trained on SPair trn_train)
 _T3 = {}
 
 
@@ -129,7 +129,7 @@ def decode_arm_t3(pair, a):
         _T3[T3_MODEL] = t3.load_model(T3_MODEL)
     N = pair['src'][a]['kp'].numel()
     out = torch.zeros(N, 2, device='cuda')
-    st, o = FT.arm_candidates(pair, a)
+    st, o = FT.arm_candidates(pair, a, extra=_T3[T3_MODEL].mu.numel() > len(FT.FEAT_NAMES))
     if o is None:
         return out
     s = _T3[T3_MODEL](o['F'], o['in_pool'])

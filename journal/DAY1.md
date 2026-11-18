@@ -39,3 +39,4 @@
   expected-metric-gain loss). trn_train cache built (48k pairs); dumping 600 pairs/category for training.
 - seq 6 hypothesis [T3]: DeepSets listwise re-ranker (19 cue features, h64, 60 ep, trained on 600 trn_train pairs/cat, 13 s) on the seq-5 pool → dev ≈ +4.4 (offline table: +1.19 over seq5).
 - seq 7 hypothesis [T1, training-free]: reverse-rank penalty 0.02·log1p(rank of the query in the candidate's own-arm column) on seq5 — T3 permutation importance ranked revrank/softcyc highest; offline on dev table +0.33 over seq5.
+- seq 8 hypothesis [T3]: re-ranker with 12 extra features (competition from other query kps, mirror-partner competition, 3x3 local map shape), trained on ALL trn_train pairs (334k kpts), h128, 60 ep (79 s) → offline +1.50 over seq5 → dev ≈ +4.75.

@@ -18,3 +18,4 @@ ref-dv-W2b03	0e76374	1.610	1.48	2.13	1.22	69.81	54.52	11.30	-	ref	ref	dv-W with 
 6	cd722bf	4.437	4.96	5.85	2.50	73.16	57.91	12.15	191	T3	keep	T3 DeepSets listwise reranker on seq5 pool (19 feats, trained on trn_train 600 pairs/cat; model runs/t3_models/m_60_64.pt) [vs_dv +3.659 std 0.128; split dev/tlr]
 6	cd722bf	3.923	4.49	5.11	2.17	73.37	58.10	12.33	204	T3	transfer	seq6 (T3, TLR-trained) transfer CleanDIFT val [vs_dv +3.223 std 0.129; split val/cleandift]
 6	cd722bf	2.682	2.77	3.63	1.65	76.49	60.73	12.94	115	T3	transfer	seq6 (T3, TLR-trained) transfer DIY-SC val [vs_dv +2.442 std 0.123; split val/diysc]
+7	f6ff781	3.584	3.92	4.61	2.22	72.12	56.67	11.87	204	T1	keep	training-free: seq5 + reverse-rank penalty 0.02*log1p(rank of query in own column) [vs_dv +2.807 std 0.109; split dev/tlr]
