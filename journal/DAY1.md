@@ -110,3 +110,4 @@
   (−1.12); −Déjà Vu cycle +4.042 (−0.67); −consensus +4.281 (−0.43); −reverse rank +4.491 (−0.22); −ARM_PAIR +4.520
   (−0.19); −cycle-penalised refinement (REF_CYC 0) +4.712 (0.00) → with TTA, REF_CYC no longer helps.
 - seq 17 hypothesis (simplification): seq15 without REF_CYC — equal dev, simpler.
+- seq 17 → kept by the simplicity rule: dev +4.712 (= seq15), val +4.563 (seq15 +4.657, −0.09 within noise).

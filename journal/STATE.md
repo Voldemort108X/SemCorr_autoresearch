@@ -4,6 +4,9 @@
 - Caches: tlr (dev, val, test, trn_train building), cleandift (val, dev), diysc (val). ~100 GB.
 - Selection = dev (TLR, 5,400 trn pairs). Noise: bootstrap std of Δ vs dv ≈ 0.05–0.12.
 - Reference dev: top1 0, dv +0.777; same-refinement (W2 β.03) baselines: top1 +0.410, dv +1.767 (val +0.250 / +1.610).
+- CURRENT BEST training-free: seq 17 (commit bd80053) dev +4.712, val +4.563 = seq 15 without REF_CYC (simplicity rule;
+  run with OVR="T3_MODEL="). seq 15 (1b0ebde) finalist: dev +4.714, val +4.657, TEST +4.378, CleanDIFT +4.593,
+  DIY-SC +2.355, SPair-U +1.789, Pascal +3.977, AP-10K +3.472.
 - CURRENT BEST training-free: seq 15 (commit 1b0ebde) dev +4.714, val +4.657 (decode.py default, T3_MODEL='')
   = seq 14 + per-pair test-time channel re-weighting (decode_lib/tta.py: diagonal softplus weights on the descriptor
   channels, 20 Adam steps (lr .05) maximising the dual-softmax mutual-match confidence of masked src(arm0)/trg; no
