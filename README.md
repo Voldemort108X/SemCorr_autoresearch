@@ -29,7 +29,8 @@ python scripts/dump_pools.py tlr dev                       # per-candidate cue t
 ```
 
 ## Current best
-seq 4 (commit 61c2572): Déjà Vu + flip-ensembled forward row (nomination / similarity) + other-arm cycle +
-pair-level consensus-RANSAC residual + refinement on the flip-ensembled map.
-dev (TLR, selection): +2.191 vs top1 (dv +0.777); val: +2.123 (dv +0.891).
-Per-kpt PCK@.10/.05/.01 val: 71.54/54.84/10.79 (top1 68.33/52.39/10.08, dv 69.84/53.38/10.25).
+- Training-free, seq 7 (commit f6ff781): dev +3.584 vs top1 (dv +0.777); val +3.312 (dv +0.891).
+  Val per-kpt PCK@.10/.05/.01 71.96/56.85/11.92 (top1 68.33/52.39/10.08, dv 69.84/53.38/10.25).
+- Learned re-ranker (T3, trained on SPair trn_train), seq 8 (commit ba7b367): dev +4.753; val +4.557
+  (73.34/58.48/12.64).
+- See results.tsv and journal/STATE.md. Selection on dev (SPair trn subset) only.

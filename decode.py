@@ -138,7 +138,21 @@ def decode_arm_t3(pair, a):
     return out
 
 
+SD_W = 1.0   # TLR-style descriptors only: reweight the SD block vs the DINO block (S = (w S_sd + (2-w) S_dino)/2)
+
+
+def reweight(pair, w):
+    def f(d):
+        if d.shape[1] != 3968:
+            return d
+        return torch.cat([d[:, :3200] * (w ** 0.5), d[:, 3200:] * ((2 - w) ** 0.5)], 1)
+    src = [dict(A, desc=f(A['desc'])) for A in pair['src']]
+    return dict(pair, src=src, trg=dict(pair['trg'], desc=f(pair['trg']['desc'])))
+
+
 def decode(pair):
+    if SD_W != 1.0:
+        pair = reweight(pair, SD_W)
     arm = pair['arm_of_kpt']
     f = decode_arm_t3 if T3_MODEL else decode_arm
     pred = f(pair, 0)
