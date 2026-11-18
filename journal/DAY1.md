@@ -98,3 +98,6 @@
 - seq 15 → kept: dev +4.714 (+0.89), val +4.657 (+1.07 vs seq14). Decode 58 ms/pair.
 - TTA variants (4-cat subset; default 20 steps/τ .05/lr .05/arm0/dsmax = +4.377): pair's arm +4.369; both arms in the loss +4.129; τ .02 +3.844; τ .1 +4.200; lr .1 10 steps +4.219; entropy objective +3.938; soft-cycle objective +4.279 → default kept.
 - TTA low-rank adapter (rank 8/32) collapses (dev −35.8/−28.9: degenerate mutual-confidence solution); 40 steps lr .025 +4.257 → diagonal 20 steps kept.
+- Launched T3 tables on TTA-adapted descriptors (T3_TTA=20) for dev + trn_train (overnight).
+- seq15 finalist so far: TEST +4.378 (74.16/59.74/14.15); CleanDIFT val +4.593 (seq14 +3.463); DIY-SC val +2.355 (seq14 +2.917 → TTA HURTS the supervised DIY-SC features by −0.56; still +2.1 over dv).
+- seq15 finalist: SPair-U +1.789 (seq14 +1.237), Pascal +3.977 (+3.590), AP-10K +3.472 (+2.709).
