@@ -57,3 +57,4 @@
   these features.
 - AP-10K cross-family cache built (1,454 images, 6,300 pairs, adaptive flip with AP10K_FLIP); evaluating.
 - PROF (relational profile correlation) .02/.05/.1 → +3.53/+3.48/+3.40: negative. AP-10K CF (test): dv +0.56, dvW2 +1.30, seq7 +2.50, seq8 +3.17.
+- seq 9 hypothesis [T3]: x2 features (+ 5x5 ring of the refinement map, own-map 3x3, query self-similarity to its mirror partner / far source patches, object-relative positions of query and candidate, 2-hop cycle, target mask fraction; 64 feats) → offline +2.07 over seq5 → dev ≈ +5.3.

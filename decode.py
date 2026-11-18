@@ -275,7 +275,7 @@ def flip_ensemble(pair, a, st, pid, d_cyc, topk_sim):
     return WFL * sfl - LFL * dfl / nP, fl_map
 
 
-T3_MODEL = 'runs/t3_models/x_full_60_128.pt'   # '' = training-free (seq 5); else path of a decode_lib.t3 model (track T3, trained on SPair trn_train)
+T3_MODEL = 'runs/t3_models/x2_full_60_128.pt'   # '' = training-free (seq 5); else path of a decode_lib.t3 model (track T3, trained on SPair trn_train)
 _T3 = {}
 
 
