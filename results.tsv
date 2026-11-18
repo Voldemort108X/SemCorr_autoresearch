@@ -4,3 +4,4 @@ ref-dv	2e2b05f	0.777	1.38	0.87	0.08	69.58	52.93	9.74	304	ref	ref	Deja Vu lambda 
 ref-or5	2e2b05f	4.896	7.69	5.80	1.19	75.89	57.86	10.85	304	ref	ref	oracle top-5 by S (same refinement)
 ref-or10	2e2b05f	7.810	11.96	9.47	2.00	80.15	61.53	11.66	304	ref	ref	oracle top-10
 ref-or30	2e2b05f	13.676	18.96	17.25	4.82	87.16	69.31	14.47	304	ref	ref	oracle top-30
+1	57929cc	1.136	2.01	1.24	0.16	70.20	53.30	9.81	159	T2	keep	consensus-RANSAC residual over keypoint pools (sim, thr6, mu0.5, cap5) [vs_dv +0.358 std 0.049; split dev/tlr]

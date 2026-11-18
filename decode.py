@@ -23,6 +23,7 @@ from decode_lib.consensus import consensus
 
 LAM = 0.5
 MU, CAP, THR, MODEL = 0.5, 5.0, 6.0, 'sim'
+WFL, LFL = 0.5, 0.25          # flip-ensemble: weight of the other-arm similarity and of its cycle distance
 K = 30
 
 
@@ -46,6 +47,8 @@ def decode_arm(pair, a):
                        (st.back_nn_x[topk_idx] - st.kpt_x.unsqueeze(1)) ** 2)
     u = topk_sim - LAM * d_cyc / nP
     score = u
+    if WFL > 0 or LFL > 0:
+        score = score + flip_ensemble(pair, a, st, pid, d_cyc, topk_sim)
     if MU > 0:
         valid = A['kp_valid'][st.valid_kpt_indices]
         g = torch.Generator(device=st.device)
@@ -58,6 +61,34 @@ def decode_arm(pair, a):
     nx, ny = C.window_soft_argmax(st, bp // nP, bp % nP, 5, 0.01)
     out[st.valid_kpt_indices] = torch.stack([nx, ny], 1)
     return out
+
+
+def flip_ensemble(pair, a, st, pid, d_cyc, topk_sim):
+    """The same semantic keypoint seen in the other arm: for arm 1 -> arm-0 kp[i]; for arm 0 -> the mirrored column of
+    arm-0 kp[perm[i]] (the counterpart part, mirrored, looks like part i). Adds WFL * S_other(l', m) and
+    -LFL * d_cyc_other / w (back-NN of the candidate in the other arm vs l'). Falls back to the own-arm values when the
+    counterpart is not annotated."""
+    nP = st.num_patches
+    vi = st.valid_kpt_indices
+    k0, v0 = pair['src'][0]['kp'], pair['src'][0]['kp_valid']
+    if a == 1:
+        lo, ok = k0[vi], v0[vi]
+    else:
+        j = pair['perm'][vi]
+        lo = (k0[j] // nP) * nP + (nP - 1 - k0[j] % nP)
+        ok = v0[j]
+    O = pair['src'][1 - a]
+    tc = pair['trg']['desc'][pid.reshape(-1)]
+    sfl = (O['desc'][lo].unsqueeze(1) * tc.view(*pid.shape, -1)).sum(-1)
+    omask = O['mask'].clone()
+    omask[lo[ok]] = True
+    ov = torch.nonzero(omask, as_tuple=True)[0]
+    bn = ov[(O['desc'][ov] @ tc.t()).argmax(0)].view(*pid.shape)
+    dfl = (geo.pid_xy(bn, nP) - geo.pid_xy(lo, nP).unsqueeze(1)).norm(dim=-1)
+    okk = ok.unsqueeze(1).expand_as(sfl)
+    sfl = torch.where(okk, sfl, topk_sim)
+    dfl = torch.where(okk, dfl, d_cyc)
+    return WFL * sfl - LFL * dfl / nP
 
 
 def decode(pair):
