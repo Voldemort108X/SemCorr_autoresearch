@@ -30,6 +30,7 @@ WIN, BETA, REF_ENS = 2, 0.03, 0.5
 REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + separable parabola sub-patch offset | 'mix'
 SWAP_T = -1.0    # mirror-pair orientation test: swap the two predictions of a mirror pair if cos < -SWAP_T (-1 = off)
 K_PEAK, R_NMS, K_TOP = 0, 1, 0   # peak pool: K_PEAK local maxima (NMS radius R_NMS) of the forward row + top K_TOP patches
+FL_ALIGN = 0     # snap radius (patches) of the other-arm keypoint location (0 = off)
 MU_ADAPT = 0.0   # >0: scale mu by min(1, inlier_ratio / MU_ADAPT) of the consensus fit
 CONS_ITER = 0    # extra consensus passes using the full score as the RANSAC unary
 RR = 0.02        # reverse-rank penalty: RR * log1p(rank of the query in the candidate's column of the own-arm S)
@@ -200,10 +201,24 @@ def other_arm_kp(pair, a, st):
     vi = st.valid_kpt_indices
     k0, v0 = pair['src'][0]['kp'], pair['src'][0]['kp_valid']
     if a == 1:
-        return k0[vi], v0[vi]
-    j = pair['perm'][vi]                      # -1 = mirror partner unknown (datasets without a flip permutation)
-    jc = j.clamp(min=0)
-    return (k0[jc] // nP) * nP + (nP - 1 - k0[jc] % nP), v0[jc] & (j >= 0)
+        lo, ok = k0[vi], v0[vi]
+    else:
+        j = pair['perm'][vi]                      # -1 = mirror partner unknown (datasets without a flip permutation)
+        jc = j.clamp(min=0)
+        lo, ok = (k0[jc] // nP) * nP + (nP - 1 - k0[jc] % nP), v0[jc] & (j >= 0)
+    if FL_ALIGN > 0:   # snap the other-arm location to the neighbour most similar to the own query descriptor
+        q = pair['src'][a]['desc'][st.idx_valid]
+        O = pair['src'][1 - a]['desc']
+        y, x = lo // nP, lo % nP
+        best, bl = torch.full_like(lo, -9, dtype=q.dtype), lo.clone()
+        for dy in range(-FL_ALIGN, FL_ALIGN + 1):
+            for dx in range(-FL_ALIGN, FL_ALIGN + 1):
+                l2 = (y + dy).clamp(0, nP - 1) * nP + (x + dx).clamp(0, nP - 1)
+                v = (O[l2] * q).sum(-1)
+                upd = v > best
+                best, bl = torch.where(upd, v, best), torch.where(upd, l2, bl)
+        lo = bl
+    return lo, ok
 
 
 def flip_ensemble(pair, a, st, pid, d_cyc, topk_sim):

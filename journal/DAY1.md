@@ -45,3 +45,9 @@
   +3.636/+3.650/+3.640 (+0.05–0.07, noise); peak (NMS) pools K_PEAK 10 / 20 / 10+top10 / 10 r2 → +2.75/+2.68/+3.43/+2.42;
   block reweighting SD_W .7/1.3 → +3.23/+2.97; refinement quad → +3.05 (@.01 ↑, @.10 ↓), mix → +3.59 (= seq7).
   T3 3-seed ensemble +0.06 over a single model (offline). Analysis: journal/analysis_8.md (mirror errors untouched).
+- TEST (selected on dev): seq7 +3.457 (73.57/58.51/13.21), seq8 +4.791 (74.97/60.42/13.90); dv +0.823; dvW2 +1.750.
+- Generalisation: SPair-U (no perm): dv +0.51, dvW2 +0.50, seq7 +0.99, seq8 +1.45. PF-Pascal (.10/.05/.15):
+  dv 89.44/75.93/93.70, seq7 90.31/77.38/94.12, seq8 91.59/78.33/95.44 (top1 86.50/73.57/91.30).
+  Sanity SPair-U top1/dv vs review dumps within ±0.01.
+- Sweeps on seq7 (not kept): MU_ADAPT (μ scaled by consensus inlier ratio) .5/μ1 +3.50, .8/μ1 +3.53, .5 +3.58;
+  FL_ALIGN 1 (snap the other-arm location to the most query-similar neighbour) +2.95 → negative.
