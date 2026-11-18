@@ -1,0 +1,10 @@
+[prepare] tlr aeroplane feat=False splits=['dev', 'test'] 99s
+[prepare] tlr bicycle feat=True splits=['val', 'dev', 'test'] 137s
+[prepare] tlr bird feat=True splits=['val', 'dev', 'test'] 123s
+[prepare] tlr boat feat=True splits=['val', 'dev', 'test'] 124s
+[prepare] tlr bottle feat=True splits=['val', 'dev', 'test'] 159s
+[prepare] tlr bus feat=True splits=['val', 'dev', 'test'] 148s
+[prepare] tlr car feat=True splits=['val', 'dev', 'test'] 137s
+[prepare] tlr cat feat=True splits=['val', 'dev', 'test'] 137s
+[prepare] tlr chair feat=True splits=['val', 'dev', 'test'] 122s
+[prepare] tlr cow feat=True splits=['val', 'dev', 'test'] 141s
