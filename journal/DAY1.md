@@ -71,3 +71,5 @@
 - seq 11 hypothesis [T4]: ARM_PAIR — decode every keypoint in the pair's arm (rebuilt semantic queries) instead of the per-keypoint vis_flip rule (which also depends on target visibility) → +0.13.
 - seq 12 [T3] seq9 model + ARM_PAIR: dev +5.400 (+0.091 < boot std 0.134) → DISCARD by the keep rule (val +5.078 vs +4.972, consistent but small). T3 best stays seq 9 (per-kpt arm rule); TF best seq 11 (ARM_PAIR).
 - seq11 finalist (training-free): TEST +3.556 (73.72/58.67/13.19); CleanDIFT val +3.270; DIY-SC val +2.945; SPair-U +0.989; Pascal +3.480; AP-10K CF +2.676.
+- seq13 (analysis) T3 x2 trained with extra perm-dropped pairs: dev table +1.98 over seq5 (seq9 +2.07); val +4.932, SPair-U +1.221, Pascal +3.797, AP-10K +3.576 (seq9: +4.972/+0.982/+3.963/+3.456) → within noise except SPair-U ↑.
+- ZROW (pool-adaptive penalty scaling by top-K sim spread) .5/1 → +3.671/+3.666 vs seq11 +3.698: negative.

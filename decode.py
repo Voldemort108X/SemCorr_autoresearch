@@ -31,6 +31,7 @@ REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + sepa
 SWAP_T = -1.0    # mirror-pair orientation test: swap the two predictions of a mirror pair if cos < -SWAP_T (-1 = off)
 K_PEAK, R_NMS, K_TOP = 0, 1, 0   # peak pool: K_PEAK local maxima (NMS radius R_NMS) of the forward row + top K_TOP patches
 DENSE_MU, DENSE_R = 0.0, 6.0   # dense-flow residual weight / source radius (patches)
+ZROW = 0.0       # pool-adaptive penalty scaling exponent (0 = off)
 PROF = 0.0       # relational-profile correlation weight
 RR_FL = 0.0      # reverse-rank penalty in the other arm
 FL_ALIGN = 0     # snap radius (patches) of the other-arm keypoint location (0 = off)
@@ -72,10 +73,16 @@ def decode_arm(pair, a):
     d_cyc = torch.sqrt((st.back_nn_y[topk_idx] - st.kpt_y.unsqueeze(1)) ** 2 +
                        (st.back_nn_x[topk_idx] - st.kpt_x.unsqueeze(1)) ** 2)
     u = topk_sim - LAM * d_cyc / nP
+    if ZROW > 0:   # pool-adaptive penalties: scale all penalties by this row's similarity spread (std of the top-K)
+        sd = topk_sim.std(1, keepdim=True)
+        pen_scale = (sd / sd.median().clamp(min=1e-6)).clamp(0.25, 4.0) ** ZROW
+    else:
+        pen_scale = 1.0
+    u = topk_sim - pen_scale * LAM * d_cyc / nP
     score = u
     if WFL > 0 or LFL > 0:
         fe, fl_map = flip_ensemble(pair, a, st, pid, d_cyc, topk_sim)
-        score = score + fe
+        score = score + fe * (pen_scale if WFL == 0 else 1.0)
     if DENSE_MU > 0:   # T2 dense flow: local median displacement of cycle-consistent dense Deja Vu matches
         score = score - DENSE_MU * dense_flow_resid(st, qxy, cxy).clamp(max=CAP) / nP
     if PROF > 0:   # relational profile: candidate's similarities to the OTHER queries vs the query's self-similarities
@@ -98,7 +105,7 @@ def decode_arm(pair, a):
         S = st.sim_valid
         cols = S[:, topk_idx.reshape(-1)].view(S.shape[0], *topk_idx.shape)
         rr = (cols > torch.gather(own_rows, 1, topk_idx).unsqueeze(0)).sum(0).float()
-        score = score - RR * torch.log1p(rr)
+        score = score - pen_scale * RR * torch.log1p(rr)
         if RR_FL > 0:   # reverse rank of the other-arm query among the other arm's (masked) source patches
             lo, ok = other_arm_kp(pair, a, st)
             O = pair['src'][1 - a]
@@ -119,7 +126,7 @@ def decode_arm(pair, a):
         mu = MU
         if MU_ADAPT > 0 and info.get('ok'):
             mu = MU * min(1.0, (info['n_inl'] / max(info['n'], 1)) / MU_ADAPT)   # trust geometry when the fit is good
-        score = s0 - mu * r.clamp(max=CAP) / nP
+        score = s0 - pen_scale * mu * r.clamp(max=CAP) / nP
         for _ in range(CONS_ITER):   # re-estimate the consensus with the full score as unary
             g.manual_seed(0)
             r, _ = consensus(qxy, cxy, score.masked_fill(~in_pool, -1e9), valid, model=MODEL, thr=THR, gen=g)

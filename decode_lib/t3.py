@@ -52,7 +52,7 @@ def evaluate(model, F, pool, err, dev='cuda'):
     return np.array([100 * (e <= t).mean() for t in THRS]), b
 
 
-def train(train_path, out_path, epochs=30, eval_path=None, seed=0, h=64, lr=2e-3, wd=1e-4, base_w=None, drop=()):
+def train(train_path, out_path, epochs=30, eval_path=None, seed=0, h=64, lr=2e-3, wd=1e-4, base_w=None, drop=(), loss='gain', tau=1.0):
     torch.manual_seed(seed)
     dev = 'cuda'
     d, F, pool, g = load_table(train_path)
@@ -76,13 +76,22 @@ def train(train_path, out_path, epochs=30, eval_path=None, seed=0, h=64, lr=2e-3
         for i in range(n // bs):
             idx = perm[i * bs:(i + 1) * bs]
             s = model(Fd[idx], pd_[idx])
-            p = torch.softmax(s, 1)
-            loss = -(p * gd[idx]).sum(1).mean()
+            if loss == 'gain':
+                p = torch.softmax(s / tau, 1)
+                L = -(p * gd[idx]).sum(1).mean()
+            elif loss == 'ce':      # cross-entropy to the soft target softmax(gain / 0.1) over the pool
+                tgt = torch.softmax((gd[idx] - (~pd_[idx]).float() * 1e4) / 0.1, 1)
+                L = -(tgt * torch.log_softmax(s, 1)).sum(1).mean()
+            else:                   # mix
+                p = torch.softmax(s, 1)
+                tgt = torch.softmax((gd[idx] - (~pd_[idx]).float() * 1e4) / 0.1, 1)
+                L = -(p * gd[idx]).sum(1).mean() - 0.1 * (tgt * torch.log_softmax(s, 1)).sum(1).mean()
+            loss_v = L
             opt.zero_grad()
-            loss.backward()
+            loss_v.backward()
             opt.step()
             sched.step()
-            tot += float(loss)
+            tot += float(loss_v)
         if eval_path and (ep % 10 == 9 or ep == epochs - 1):
             de, Fe, pe, _ = load_table(eval_path)
             pk, _ = evaluate(model, Fe, pe, de['err'])
