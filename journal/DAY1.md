@@ -118,3 +118,4 @@
 - TTA_SEM (source-side semantic contrast in the TTA: query vs its flipped semantic view (+) vs self-mirror / own-arm partner (−)) .1/.5/2 → +2.703/+2.462/+2.440 (subset; base +4.366): strongly negative (few views → over-specialised weights).
 - TTA_BLOCKNORM (per-block renormalisation after weighting) +4.103 vs +4.366 (subset): negative.
 - TTA_MIX (mix original and adapted similarities) .5/.75 → +4.140/+4.328 (subset; pure TTA +4.366): negative.
+- seq17 finalist: TEST +4.318, CleanDIFT +4.519, DIY-SC +2.470, SPair-U +1.674, Pascal +3.825, AP-10K +3.562 (seq15: +4.378/+4.593/+2.355/+1.789/+3.977/+3.472) → equivalent within noise.
