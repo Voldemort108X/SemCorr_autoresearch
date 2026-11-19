@@ -158,3 +158,4 @@
 - seq23 finalist complete: CleanDIFT test +4.499, DIY-SC test +2.581, dev2 +4.614; test bootstrap seq23−seq17 +0.309 [0.225, 0.397]. FINAL_REPORT v2 uses seq23 as DV++.
 - T3+TTA 3-seed ensemble (A/B): singles 50.29/50.27/50.20, ensemble 50.28 → no gain.
 - T3 on the seq-23 pool/refinement (T3_S23 tables), A/B: B-set mean 50.21 vs 50.29 for the seq-16 tables → no gain; seq16 stays the T3 best.
+- Near-misses on top of seq23 (dev): NOM_ENS 1.0 +4.947, DECOL R1.5 M.02 +4.931 (seq23 +4.918) → noise; not kept.
