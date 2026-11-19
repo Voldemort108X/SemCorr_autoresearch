@@ -139,3 +139,4 @@
 - seq 19 [T3] dual features: dev +6.339 vs +6.273 (+0.066 < std 0.140) → DISCARD.
 - ROW_SMOOTH (3x3-smoothed own query as a third view in the forward row only): subset .3 +4.463, .7 +4.497 (base +4.366); full dev .7 +4.824 (+0.11, borderline).
 - ROW_SMOOTH full dev 1.0 +4.766, 1.5 +4.684 → best .7 +4.824 (+0.11 < keep threshold); not kept.
+- seq20 (analysis) DV++-fast = seq17 decoder with fixed channel weights averaged over 720 unlabeled trn pairs (runs/tta_prior.npy; no per-pair TTA): dev +3.978, val +3.689, TEST +3.811 (seq17: +4.712/+4.563/+4.318; no TTA ≈ +3.70/+3.39/+3.56).
