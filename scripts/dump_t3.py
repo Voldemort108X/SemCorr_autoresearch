@@ -20,6 +20,7 @@ REFCYC = float(os.environ.get('T3_REFCYC', '0'))
 if REFCYC > 0:
     FT.CFG['REF_CYC'] = REFCYC
 TTA = int(os.environ.get('T3_TTA', '0'))
+DUAL = os.environ.get('T3_DUAL', '0') == '1'
 PEAKS = int(os.environ.get('T3_PEAKS', '0'))
 if PEAKS > 0:
     FT.CFG['PEAKS'] = PEAKS
@@ -40,6 +41,7 @@ with torch.no_grad():
             if vis.sum() == 0:
                 continue
             pair = P.make_pair(F_, meta, j, cat)
+            pair_orig = pair
             if TTA > 0:
                 from decode_lib.tta import adapt_pair
                 with torch.enable_grad():
@@ -53,6 +55,11 @@ with torch.no_grad():
                 st, o = FT.arm_candidates(pair, a, extra=EXTRA)
                 if o is None:
                     continue
+                if DUAL:   # append the same features computed on the non-adapted descriptors for the same candidates
+                    inv = torch.full((C.NP * C.NP,), 0, dtype=torch.long, device='cuda')
+                    inv[st.tgt_valid_idx] = torch.arange(st.tgt_valid_idx.numel(), device='cuda')
+                    st0, o0 = FT.arm_candidates(pair_orig, a, extra=EXTRA, fixed_idx=inv[o['pid']])
+                    o['F'] = torch.cat([o['F'], o0['F']], -1)
                 vi = st.valid_kpt_indices
                 take = (arm[vi] == a) & torch.from_numpy(vis).cuda()[vi]
                 if take.sum() == 0:
@@ -76,7 +83,7 @@ with torch.no_grad():
         print(cat, f'{time.time() - t0:.0f}s', flush=True)
         del F_
 out = {k: (np.concatenate(v) if k not in ('cat', 'pair') else np.array(v)) for k, v in rows.items()}
-tag = {0: '', 1: '_x', 2: '_x2'}[EXTRA] + (f'_pd{PERMDROP:g}' if PERMDROP > 0 else '') + (f'_rc{REFCYC:g}' if REFCYC > 0 else '') + (f'_pk{PEAKS}' if PEAKS > 0 else '') + (f'_tta{TTA}' if TTA > 0 else '') + (f'_n{maxp}' if maxp else '')
+tag = {0: '', 1: '_x', 2: '_x2'}[EXTRA] + (f'_pd{PERMDROP:g}' if PERMDROP > 0 else '') + (f'_rc{REFCYC:g}' if REFCYC > 0 else '') + (f'_pk{PEAKS}' if PEAKS > 0 else '') + (f'_tta{TTA}' if TTA > 0 else '') + ('_dual' if DUAL else '') + (f'_n{maxp}' if maxp else '')
 tag += '' if cats == P.CATS else '_' + '-'.join(cats)
-np.savez(f'{P.cdir("tlr", split)}/t3{tag}.npz', **out, feat_names=np.array({0: FT.FEAT_NAMES, 1: FT.FEAT_NAMES2, 2: FT.FEAT_NAMES3}[EXTRA]))
+np.savez(f'{P.cdir("tlr", split)}/t3{tag}.npz', **out, feat_names=np.array(list({0: FT.FEAT_NAMES, 1: FT.FEAT_NAMES2, 2: FT.FEAT_NAMES3}[EXTRA]) * (2 if DUAL else 1)))
 print('saved', out['F'].shape, f'{time.time() - t0:.0f}s')

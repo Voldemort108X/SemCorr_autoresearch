@@ -45,7 +45,7 @@ def mixed_pool(st, row, ktop, kpeak, r=1):
     return inv[sel]
 
 
-def arm_candidates(pair, a, cfg=CFG, with_feats=True, extra=False):
+def arm_candidates(pair, a, cfg=CFG, with_feats=True, extra=False, fixed_idx=None):
     A = pair['src'][a]
     st = C.PairState(A['desc'], pair['trg']['desc'], A['kp'], A['mask'], pair['trg']['mask'])
     if st.M == 0:
@@ -63,7 +63,10 @@ def arm_candidates(pair, a, cfg=CFG, with_feats=True, extra=False):
     _, _, _, cutoff_k = C.nominate(st, max_k=cfg['K'])
     si, _ = st.sorted_by_temperature(0.1)
     topk_idx = si[:, :min(cfg['K'], si.shape[1])]
-    if cfg.get('PEAKS', 0) > 0 and topk_idx.shape[1] == cfg['K']:   # replace the tail of the pool by NMS peaks
+    if fixed_idx is not None:          # candidates given (valid-target indices) -> features only
+        topk_idx = fixed_idx
+        cutoff_k = torch.full_like(cutoff_k, topk_idx.shape[1])
+    elif cfg.get('PEAKS', 0) > 0 and topk_idx.shape[1] == cfg['K']:   # replace the tail of the pool by NMS peaks
         topk_idx = mixed_pool(st, row, cfg['K'] - cfg['PEAKS'], cfg['PEAKS'])
         cutoff_k = torch.full_like(cutoff_k, topk_idx.shape[1])
     topk = torch.gather(row, 1, topk_idx)
