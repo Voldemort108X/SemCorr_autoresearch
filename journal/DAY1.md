@@ -136,3 +136,4 @@
 - DECOL (mirror-pair de-collision; subset, base +4.366): forced R1.5 +3.544, R1.5 EX5 +2.324; with score-margin M .05 +4.452, M .02 +4.489, M .1 +4.306; R2.5 M.05 +4.444.
 - DECOL R1.5 M.02 full dev +4.746 vs +4.712 → noise; not kept.
 - TTA ablation (full dev; seq17 +4.712, no TTA ≈ +3.70): TTA only for selection (refine on original) +4.281 (@.10 +4.75, @.01 +2.46); TTA only for refinement (select on original) +4.259 (@.10 +4.18, @.01 +2.98) → TTA helps both the choice (@.10) and the localisation (@.01).
+- seq 19 [T3] dual features: dev +6.339 vs +6.273 (+0.066 < std 0.140) → DISCARD.
