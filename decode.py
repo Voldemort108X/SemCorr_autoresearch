@@ -26,11 +26,11 @@ LAM = 0.5
 MU, CAP, THR, MODEL = 0.5, 5.0, 6.0, 'sim'
 WFL, LFL = 0.0, 0.25          # flip-ensemble: weight of the other-arm similarity and of its cycle distance
 K = 30
-WIN, BETA, REF_ENS = 2, 0.03, 0.5
+WIN, BETA, REF_ENS = 2, 0.03, 1.0
 REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + separable parabola sub-patch offset | 'mix'
 TTA_SUB = 0      # sub-sample patches in the TTA objective (0 = all)
 SELF_TRAIN = 0.0   # >0: second TTA with pseudo-labels from a first decode (weight of the CE term), then re-decode
-ROW_SMOOTH = 0.0   # weight of a smoothed-query view in the forward row (selection only)
+ROW_SMOOTH = 0.7   # weight of a smoothed-query view in the forward row (selection only)
 REF_ORIG, SEL_ORIG = False, False   # TTA ablations: refinement / selection on the non-adapted descriptors
 DECOL_R, DECOL_EX, DECOL_MARGIN = 0.0, 3.0, 1e9   # mirror-pair de-collision radius / exclusion / max score drop
 SWAP_T = -1.0    # mirror-pair orientation test: swap the two predictions of a mirror pair if cos < -SWAP_T (-1 = off)
