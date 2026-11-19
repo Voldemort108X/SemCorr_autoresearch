@@ -1,6 +1,7 @@
 # Decoders beyond Déjà Vu: final report (autonomous run 2026-11-18 → 2026-11-23)
 
-Version 1, written 2026-11-19 (day 2) after both tracks saturated. Every number below is read from
+Version 2, 2026-11-19 (day 2): the training-free method is now seq 23 (DV++ = seq 17 + a smoothed-query view + equal
+flip-view weight in the refinement); seq 17 numbers are kept where useful. Every number below is read from
 `runs/<id>/metrics.json` (row ids in `results.tsv`).
 
 **Protocol.**
@@ -19,13 +20,14 @@ Version 1, written 2026-11-19 (day 2) after both tracks saturated. Every number 
 | top-1 (window 5, β .01) | – | 69.78 / 54.09 / 11.04 | 0 | – |
 | Déjà Vu λ 0.5 (paper) | training-free | 71.22 / 54.98 / 11.19 | +0.82 | ~3 |
 | Déjà Vu + our refinement (window 2, β .03) | training-free | 71.28 / 56.26 / 12.62 | +1.75 | ~3 |
-| **DV++ (this work)** | **training-free** | **74.08 / 59.64 / 14.15** | **+4.32** | ~60 |
+| **DV++ (this work, seq 23)** | **training-free** | **74.46 / 59.91 / 14.42** | **+4.63** | ~60 |
+| DV++ seq 17 (without the smoothed view) | training-free | 74.08 / 59.64 / 14.15 | +4.32 | ~60 |
 | DV++-fast (fixed channel weights, no per-pair TTA) | unsupervised prior | 73.94 / 58.90 / 13.51 | +3.81 | ~8 |
 | **DV++ + learned re-ranker (T3)** | **learned on SPair trn** | **76.06 / 62.00 / 14.83** | **+5.99** | ~74 |
 | oracle: best of top-5 / top-30 by S (base refinement) | – | 77.11 / 59.68 / 12.23 · 87.46 / 70.27 / 15.86 | | |
 
 **Gaps closed.**
-- DV++ recovers +4.3 of the top-1 → top-5-oracle gap at @0.10 (69.8 → 74.1 of 77.1). At @0.05 and @0.01 it exceeds the
+- DV++ recovers +4.7 of the top-1 → top-5-oracle gap at @0.10 (69.8 → 74.5 of 77.1). At @0.05 and @0.01 it exceeds the
   top-5 oracle, because of better sub-patch refinement and better descriptors after test-time adaptation.
 - The T3 re-ranker reaches 76.1 @0.10, i.e. 1.0 below the top-5 oracle.
 
@@ -33,18 +35,19 @@ Version 1, written 2026-11-19 (day 2) after both tracks saturated. Every number 
 
 | comparison | Δ | 95 % CI |
 |---|---|---|
-| DV++ − Déjà Vu with the same refinement | +2.57 | [2.40, 2.74] |
-| T3 − DV++ | +1.67 | [1.53, 1.80] |
+| DV++ − Déjà Vu with the same refinement | +2.88 | [2.72, 3.04] |
+| DV++ (seq 23) − seq 17 | +0.31 | [0.23, 0.40] |
+| T3 − DV++ | +1.36 | [1.21, 1.51] |
 
 **Generalisation.** DV++ (settings fixed from dev) helps everywhere. Δ vs top-1 (CleanDIFT and DIY-SC on test):
 
-| | DV++ | Déjà Vu λ .5 |
-|---|---|---|
-| CleanDIFT | +4.29 | +0.73 |
-| DIY-SC | +2.74 | +0.29 |
-| AP-10K cross-family | +3.56 | +0.56 |
-| PF-Pascal | +3.83 | +2.57 |
-| SPair-U | +1.67 | +0.51 |
+| | DV++ (seq 23) | DV++ (seq 17) | Déjà Vu λ .5 |
+|---|---|---|---|
+| CleanDIFT | +4.50 | +4.29 | +0.73 |
+| DIY-SC | +2.58 | +2.74 | +0.29 |
+| AP-10K cross-family | +3.72 | +3.56 | +0.56 |
+| PF-Pascal | +4.18 | +3.83 | +2.57 |
+| SPair-U | +1.94 | +1.67 | +0.51 |
 
 ## 2. Method: DV++ (training-free)
 
@@ -75,6 +78,8 @@ DV++ uses only quantities the base pipeline already computes:
 
   s_i(m) = (S[ℓ_i, m] + 0.75 S'[ℓ'_i, m]) / 1.75.
 
+- Third view (seq 23): a 3×3-smoothed own query q̄_i (the query patch plus its 8 neighbours, re-normalised) is mixed
+  into the forward row only (not the refinement): s_i ← (s_i + 0.7 q̄_iᵀF_t) / 1.7.
 - Nomination is unchanged from Déjà Vu, applied to s_i: top-p with τ = 0.1, p = 0.9, K_max = 30.
 
 **(c) Score of candidate m.**
@@ -98,7 +103,7 @@ rebuilt from the source as ℓ'_i. This replaces the base per-keypoint rule, whi
 
 **(e) Refinement.**
 - Window soft-argmax around the chosen patch: window 2 (5×5 patches), β = 0.03, on the map
-  (S[ℓ_i,·] + 0.5 S'[ℓ'_i,·]) / 1.5.
+  (S[ℓ_i,·] + S'[ℓ'_i,·]) / 2 (seq 23; seq 17 used weight 0.5).
 - The base pipeline uses window 5, β 0.01 and the own map only.
 
 **Robustness.** Without π (SPair-U unseen keypoints, PF-Pascal), (b) and (d) fall back to the own arm. Everything else is
@@ -161,11 +166,12 @@ selects the 64-feature model; for perm-less data the 31-feature model is the saf
 | Déjà Vu + refinement W2 β.03 | +1.77 | +1.61 | 71.28/56.26/12.62 | 66.44/51.42/11.12 | +1.75 |
 | DV++ without TTA | +3.82 | +3.58 | 73.81/58.90/13.34 | 68.75/53.76/11.68 | +3.71 |
 | DV++-fast | +3.98 | +3.69 | 73.94/58.90/13.51 | 69.02/53.96/11.86 | +3.81 |
-| **DV++** | **+4.71** | **+4.56** | **74.08/59.64/14.15** | **69.17/54.64/12.58** | **+4.32** |
+| DV++ seq 17 | +4.71 | +4.56 | 74.08/59.64/14.15 | 69.17/54.64/12.58 | +4.32 |
+| **DV++ (seq 23)** | **+4.92** | **+4.77** | **74.46/59.91/14.42** | **69.40/54.84/12.78** | **+4.63** |
 | T3 without TTA | (+5.31) | +4.97 | 75.50/61.05/14.05 | 70.63/56.07/12.46 | +5.23 |
 | **T3 + TTA** | (+6.27) | **+6.09** | **76.06/62.00/14.83** | **70.95/56.81/13.20** | **+5.99** |
 
-The per-category test table is in `reports/tables_test.md`:
+The per-category test table is in `reports/tables_test.md` (numbers below are for seq 17):
 - DV++ improves over Déjà Vu at @0.10 in 17 of 18 categories; bird is unchanged (±0.0).
 - Large gains: tvmonitor +9.7, pottedplant +7.4, bottle +4.7, chair +4.1, sheep +3.5.
 - Smallest gains: aeroplane +0.7, bus +0.4, bicycle +0.9, train +1.0.
@@ -179,7 +185,8 @@ The per-category test table is in `reports/tables_test.md`:
 | top-1 test PCK | | 70.29/54.52/11.12 | | 74.44/58.65/12.10 |
 | Déjà Vu | +0.70¹ | +0.73 | +0.24¹ | +0.29 |
 | DV++ without TTA | +3.46 | – | +2.92 | – |
-| **DV++** | **+4.52** | **+4.29** (74.48/60.02/14.31) | +2.47 | **+2.74** (76.33/62.29/14.78) |
+| DV++ seq 17 | +4.52 | +4.29 (74.48/60.02/14.31) | +2.47 | +2.74 (76.33/62.29/14.78) |
+| **DV++ (seq 23)** | **+4.68** | **+4.50** (74.79/60.20/14.43) | +2.42 | +2.58 (76.06/62.09/14.78) |
 | T3 + TTA | +5.86 | +5.96 (76.47/62.38/14.97) | +2.82 | +3.08 (76.61/62.92/14.91) |
 
 ¹ Val values use the base methods' own λ (3.0 / 1.0).
@@ -194,7 +201,8 @@ TTA; DIY-SC was never used for selection, so this is reported as a limitation.
 | top-1 | 56.22/35.48/4.49 | 53.30/36.26/7.10 | 86.50/73.57/91.30 |
 | Déjà Vu | +0.51 | +0.56 | 89.44/75.93/93.70 (+2.57) |
 | Déjà Vu + W2 refinement | +0.50 | +1.30 | +2.69 |
-| **DV++** | **+1.67** (58.12/37.66/5.42) | **+3.56** (56.89/40.50/9.95) | **90.72/77.55/94.57 (+3.83)** |
+| DV++ seq 17 | +1.67 (58.12/37.66/5.42) | +3.56 (56.89/40.50/9.95) | 90.72/77.55/94.57 (+3.83) |
+| **DV++ (seq 23)** | **+1.94** (58.58/37.93/5.48) | **+3.72** (57.23/40.56/10.02) | **90.80/78.46/94.66 (+4.18)** |
 | T3 + TTA | +2.03 | +4.20 (57.64/41.44/10.16) | 90.64/77.38/95.03 (+3.89) |
 
 - SPair-U and PF-Pascal have no keypoint mirror permutation, so the flip ensemble is off there.
@@ -205,7 +213,7 @@ Other features × new data (settings still from TLR dev; Déjà Vu at λ .5):
 | | CleanDIFT SPair-U | CleanDIFT AP-10K CF | DIY-SC SPair-U |
 |---|---|---|---|
 | Déjà Vu | +0.39 | +0.46 | +0.35 |
-| DV++ | +1.67 | +3.73 (57.23/40.77/10.35) | **−0.31** |
+| DV++ seq 17 | +1.67 | +3.73 (57.23/40.77/10.35) | **−0.31** |
 | DV++ without TTA | +0.98 | – | +0.78 |
 
 - TTA is what hurts the supervised DIY-SC descriptors (val −0.45, SPair-U −1.09 vs DV++ without TTA); it helps every
@@ -220,7 +228,8 @@ A second, disjoint selection split (dev2 = 300 other SPair trn pairs per categor
 | Déjà Vu | +0.79 | +0.78 |
 | Déjà Vu + W2 refinement | +1.56 | +1.77 |
 | DV++ without TTA | +3.67 | +3.82 |
-| DV++ | +4.45 | +4.71 |
+| DV++ seq 17 | +4.45 | +4.71 |
+| DV++ seq 23 | +4.61 | +4.92 |
 
 ## 5. Failure analysis
 - **Remaining errors (dev, DV++, wrong @0.10 = 27.1 % of keypoints).** Breakdown, as % of all keypoints:
@@ -260,8 +269,8 @@ Within noise or harmful:
 
 ## 7. Recommendation
 1. **For the paper / a follow-up: DV++.**
-   - Its three main training-free ingredients each add ≈ +1 point over Déjà Vu, for +2.6 over Déjà Vu at equal
-     refinement (test, CI [2.40, 2.74]):
+   - Its three main training-free ingredients each add ≈ +1 point over Déjà Vu, for +2.9 over Déjà Vu at equal
+     refinement (seq 23, test, CI [2.72, 3.04]):
      - the flip-ensemble query, which reuses the second source arm the adaptive-pose step already computes;
      - label-free per-pair TTA of channel weights;
      - a tuned sub-patch refinement.
@@ -281,7 +290,8 @@ Within noise or harmful:
 ## 8. Reproduction
 - Cache: `python prepare.py --method tlr --split dev,val,test` (plus `cleandift` / `diysc`).
   Generalisation sets: `python prepare_gen.py {spairu,pascal,ap10kcf} tlr`.
-- DV++: `OVR="T3_MODEL=" bash scripts/run.sh <id> {dev,val,test} [tlr|cleandift|diysc]` (commit bd80053, seq 17).
+- DV++: `OVR="T3_MODEL=" bash scripts/run.sh <id> {dev,val,test} [tlr|cleandift|diysc]` (commit 5b1bd72, seq 23;
+  seq 17 = commit bd80053).
   Generalisation: `OVR="T3_MODEL=" python prepare_gen.py eval {pascal,ap10kcf} <id> tlr`.
 - T3 + TTA (seq 16, commit 0003221, default `decode.py`):
   1. Build tables: `T3_EXTRA=2 T3_TTA=20 python scripts/dump_t3.py trn_train 0`.

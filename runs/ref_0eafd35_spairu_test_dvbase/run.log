@@ -1,0 +1,12 @@
+override T3_MODEL=''
+override MU='0.0'
+override NOM_ENS='0.0'
+override LFL='0.0'
+override REF_ENS='0.0'
+override RR='0.0'
+override WIN='5'
+override BETA='0.01'
+spairu_test: +0.510 d10 +0.92 d05 +0.55 d01 +0.07 | dv +0.510 | vs_dv +0.000 (boot std 0.000, P>0 0.00)
+pck_kpt: dec 57.14/36.03/4.55 | top1 56.22/35.48/4.49 | dv 57.14/36.03/4.55 | or5 64.07/41.03/5.41 | or10 69.15/44.96/6.18 | or30 78.86/55.14/9.35
+pck_img: dec 59.64/38.20/4.88 | top1 59.04/37.74/4.81 | dv 59.64/38.20/4.88 | or5 66.44/43.21/5.76 | or10 71.15/47.02/6.46 | or30 80.58/57.34/9.63
+sec: 159 (decode 16) n_kpt 19990 n_pair 8254

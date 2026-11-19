@@ -1,0 +1,2 @@
+dev ['T3_MODEL='] {'n': 8975, 'both_ok': 62.97, 'swap': 4.11, 'collide': 13.05, 'one_wrong': 11.05, 'both_wrong_other': 8.81}
+dev ['T3_MODEL=,TTA_STEPS=0,MU=0.0,NOM_ENS=0.0,LFL=0.0,REF_ENS=0.0,RR=0.0,ARM_PAIR=False,WIN=5,BETA=0.01'] {'n': 8975, 'both_ok': 57.13, 'swap': 4.11, 'collide': 9.07, 'one_wrong': 17.25, 'both_wrong_other': 12.45}

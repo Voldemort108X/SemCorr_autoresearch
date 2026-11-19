@@ -1,0 +1,19 @@
+[prepare] cleandift aeroplane feat=False splits=['test'] 79s
+[prepare] cleandift bicycle feat=False splits=['test'] 76s
+[prepare] cleandift bird feat=False splits=['test'] 71s
+[prepare] cleandift boat feat=False splits=['test'] 69s
+[prepare] cleandift bottle feat=False splits=['test'] 95s
+[prepare] cleandift bus feat=False splits=['test'] 89s
+[prepare] cleandift car feat=False splits=['test'] 75s
+[prepare] cleandift cat feat=False splits=['test'] 80s
+[prepare] cleandift chair feat=False splits=['test'] 68s
+[prepare] cleandift cow feat=False splits=['test'] 81s
+[prepare] cleandift dog feat=False splits=['test'] 69s
+[prepare] cleandift horse feat=False splits=['test'] 68s
+[prepare] cleandift motorbike feat=False splits=['test'] 78s
+[prepare] cleandift person feat=False splits=['test'] 72s
+[prepare] cleandift pottedplant feat=False splits=['test'] 88s
+[prepare] cleandift sheep feat=False splits=['test'] 86s
+[prepare] cleandift train feat=False splits=['test'] 81s
+[prepare] cleandift tvmonitor feat=False splits=['test'] 88s
+[prepare] done

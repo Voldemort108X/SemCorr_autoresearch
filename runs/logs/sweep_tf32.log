@@ -1,0 +1,2 @@
+T3_MODEL=,TTA_TF32=True                  tlr pck 74.01/63.21/18.12 dev: +4.339 d +3.46/+5.17/+4.39 vs_dv +3.686
+T3_MODEL=,TTA_TF32=True,TTA_ARMSEL=True  tlr pck 74.28/63.42/18.33 dev: +4.572 d +3.73/+5.38/+4.61 vs_dv +3.919

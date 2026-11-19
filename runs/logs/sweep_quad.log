@@ -1,0 +1,2 @@
+T3_MODEL=,REF_MODE=quad                  tlr pck 71.33/55.65/12.07 dev: +3.047 d +3.14/+3.59/+2.41 vs_dv +2.270
+T3_MODEL=,REF_MODE=mix                   tlr pck 71.84/56.52/12.33 dev: +3.594 d +3.65/+4.46/+2.67 vs_dv +2.816

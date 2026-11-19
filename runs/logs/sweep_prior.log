@@ -1,0 +1,2 @@
+T3_MODEL=,TTA_STEPS=0,TTA_PRIOR=runs/tta_prior.npy tlr pck 73.73/62.36/17.77 dev: +3.848 d +3.18/+4.32/+4.04 vs_dv +3.194
+T3_MODEL=,TTA_PRIOR=runs/tta_prior.npy   tlr pck 73.77/63.04/18.39 dev: +4.294 d +3.22/+5.00/+4.66 vs_dv +3.641

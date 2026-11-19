@@ -1,0 +1,11 @@
+NOM_ENS=0.0                              tlr pck 71.65/56.53/11.90 dev: +3.392 d +3.46/+4.47/+2.25 vs_dv +2.615
+Traceback (most recent call last):
+  File "/workspace/SemCorr_autoresearch/scripts/sweep.py", line 20, in <module>
+    m = P.evaluate(D.decode, os.environ.get('METHOD', 'tlr'), split, cats=cats, quiet=True)
+  File "/workspace/SemCorr_autoresearch/prepare.py", line 314, in evaluate
+    pred = decode_fn(pair)
+  File "/workspace/SemCorr_autoresearch/decode.py", line 433, in decode
+    pred = f(pair, 0)
+  File "/workspace/SemCorr_autoresearch/decode.py", line 171, in decode_arm
+    s2d = (s2d + REF_ENS * fl_map) / (1 + REF_ENS)
+UnboundLocalError: local variable 'fl_map' referenced before assignment

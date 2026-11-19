@@ -1,0 +1,2 @@
+T3_MODEL=,SELF_TRAIN=0.1                 tlr pck 73.90/62.86/17.32 dev: +3.919 d +3.34/+4.82/+3.59 vs_dv +3.266
+T3_MODEL=,SELF_TRAIN=0.5                 tlr pck 73.94/62.83/17.31 dev: +3.919 d +3.39/+4.79/+3.58 vs_dv +3.266

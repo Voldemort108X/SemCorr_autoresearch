@@ -1,0 +1,19 @@
+[prepare] tlr aeroplane feat=False splits=['dev2'] 68s
+[prepare] tlr bicycle feat=False splits=['dev2'] 67s
+[prepare] tlr bird feat=False splits=['dev2'] 63s
+[prepare] tlr boat feat=False splits=['dev2'] 63s
+[prepare] tlr bottle feat=False splits=['dev2'] 63s
+[prepare] tlr bus feat=False splits=['dev2'] 70s
+[prepare] tlr car feat=False splits=['dev2'] 65s
+[prepare] tlr cat feat=False splits=['dev2'] 71s
+[prepare] tlr chair feat=False splits=['dev2'] 63s
+[prepare] tlr cow feat=False splits=['dev2'] 70s
+[prepare] tlr dog feat=False splits=['dev2'] 66s
+[prepare] tlr horse feat=False splits=['dev2'] 62s
+[prepare] tlr motorbike feat=False splits=['dev2'] 67s
+[prepare] tlr person feat=False splits=['dev2'] 62s
+[prepare] tlr pottedplant feat=False splits=['dev2'] 63s
+[prepare] tlr sheep feat=False splits=['dev2'] 70s
+[prepare] tlr train feat=False splits=['dev2'] 65s
+[prepare] tlr tvmonitor feat=False splits=['dev2'] 67s
+done

@@ -1,0 +1,20 @@
+AggregationNetwork has 5150214 parameters.
+[prepare] diysc aeroplane feat=False splits=['test'] 34s
+[prepare] diysc bicycle feat=False splits=['test'] 32s
+[prepare] diysc bird feat=False splits=['test'] 31s
+[prepare] diysc boat feat=False splits=['test'] 32s
+[prepare] diysc bottle feat=False splits=['test'] 31s
+[prepare] diysc bus feat=False splits=['test'] 31s
+[prepare] diysc car feat=False splits=['test'] 30s
+[prepare] diysc cat feat=False splits=['test'] 31s
+[prepare] diysc chair feat=False splits=['test'] 30s
+[prepare] diysc cow feat=False splits=['test'] 30s
+[prepare] diysc dog feat=False splits=['test'] 31s
+[prepare] diysc horse feat=False splits=['test'] 31s
+[prepare] diysc motorbike feat=False splits=['test'] 29s
+[prepare] diysc person feat=False splits=['test'] 30s
+[prepare] diysc pottedplant feat=False splits=['test'] 41s
+[prepare] diysc sheep feat=False splits=['test'] 37s
+[prepare] diysc train feat=False splits=['test'] 42s
+[prepare] diysc tvmonitor feat=False splits=['test'] 39s
+[prepare] done

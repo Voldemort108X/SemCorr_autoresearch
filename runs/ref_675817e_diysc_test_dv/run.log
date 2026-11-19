@@ -1,0 +1,14 @@
+override T3_MODEL=''
+override TTA_STEPS='0'
+override MU='0.0'
+override NOM_ENS='0.0'
+override LFL='0.0'
+override REF_ENS='0.0'
+override RR='0.0'
+override ARM_PAIR='False'
+override WIN='5'
+override BETA='0.01'
+test: +0.292 d10 +0.55 d05 +0.29 d01 +0.04 | dv +0.182 | vs_dv +0.110 (boot std 0.022, P>0 1.00)
+pck_kpt: dec 74.99/58.94/12.14 | top1 74.44/58.65/12.10 | dv 74.86/58.76/12.10 | or5 80.06/63.15/13.16 | or10 83.15/66.01/13.99 | or30 88.73/73.09/17.30
+pck_img: dec 71.95/55.71/10.98 | top1 71.62/55.59/10.95 | dv 71.74/55.49/10.94 | or5 77.62/60.26/11.97 | or10 80.93/63.20/12.76 | or30 86.99/70.42/15.97
+sec: 65 (decode 22) n_kpt 88328 n_pair 12234

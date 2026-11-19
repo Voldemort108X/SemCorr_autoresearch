@@ -1,0 +1,2 @@
+T3_MODEL=,MU=0.0,RR=0.0,LFL=0.0,ARM_PAIR=False tlr pck 71.58/57.15/12.67 dev: +3.831 d +3.39/+5.10/+3.01 vs_dv +3.053
+T3_MODEL=,MU=0.0,RR=0.0,LFL=0.0,ARM_PAIR=False,LAM=0.0 tlr pck 69.65/55.43/12.27 dev: +2.479 d +1.46/+3.37/+2.61 vs_dv +1.702

@@ -1,0 +1,2 @@
+T3_MODEL=,ROW_SMOOTH=0.3                 tlr pck 74.14/63.34/18.22 dev: +4.463 d +3.59/+5.30/+4.49 vs_dv +3.810
+T3_MODEL=,ROW_SMOOTH=0.7                 tlr pck 74.14/63.38/18.29 dev: +4.497 d +3.59/+5.34/+4.56 vs_dv +3.844

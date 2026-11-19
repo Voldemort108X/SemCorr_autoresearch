@@ -1,0 +1,4 @@
+T3_MODEL=,TTA_STEPS=10                   tlr pck 72.80/57.90/12.69 dev: +4.496 d +4.61/+5.85/+3.03 vs_dv +3.719
+T3_MODEL=,TTA_STEPS=30                   tlr pck 72.44/57.83/12.72 dev: +4.359 d +4.24/+5.77/+3.06 vs_dv +3.581
+T3_MODEL=,TTA_TAU=0.1                    tlr pck 72.64/57.24/12.34 dev: +4.101 d +4.44/+5.18/+2.68 vs_dv +3.324
+T3_MODEL=,TTA_OBJ=cyc                    tlr pck 73.11/57.82/12.46 dev: +4.491 d +4.91/+5.76/+2.80 vs_dv +3.714

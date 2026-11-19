@@ -1,0 +1,4 @@
+T3_MODEL=,K_PEAK=10                      tlr pck 71.03/55.49/11.64 dev: +2.750 d +2.84/+3.43/+1.98 vs_dv +1.973
+T3_MODEL=,K_PEAK=20                      tlr pck 70.95/55.39/11.62 dev: +2.684 d +2.76/+3.33/+1.96 vs_dv +1.907
+T3_MODEL=,K_PEAK=10,K_TOP=10             tlr pck 71.89/56.49/11.81 dev: +3.426 d +3.69/+4.43/+2.15 vs_dv +2.649
+T3_MODEL=,K_PEAK=10,R_NMS=2              tlr pck 70.51/55.12/11.55 dev: +2.424 d +2.32/+3.06/+1.89 vs_dv +1.647

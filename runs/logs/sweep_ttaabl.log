@@ -1,0 +1,2 @@
+T3_MODEL=,REF_ORIG=True                  tlr pck 72.95/57.69/12.12 dev: +4.281 d +4.75/+5.63/+2.46 vs_dv +3.503
+T3_MODEL=,SEL_ORIG=True                  tlr pck 72.38/57.67/12.64 dev: +4.259 d +4.18/+5.61/+2.98 vs_dv +3.482

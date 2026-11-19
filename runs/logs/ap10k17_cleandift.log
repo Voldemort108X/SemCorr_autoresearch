@@ -1,0 +1,7 @@
+/workspace/SemCorr_autoresearch/prepare_gen.py:236: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:199.)
+  self.raw[key] = {b: torch.from_numpy(np.ascontiguousarray(v[i, a])).cuda() for b, v in self.mm.items()}
+override T3_MODEL=''
+ap10kcf: +3.730 d10 +3.79 d05 +4.28 d01 +3.12 | dv +0.550 | vs_dv +3.180 (boot std 0.110, P>0 1.00)
+pck_kpt: dec 57.23/40.77/10.35 | top1 53.44/36.49/7.23 | dv 54.49/37.03/7.28 | or5 58.49/39.74/7.79 | or10 61.69/42.01/8.25 | or30 69.18/48.46/10.00
+pck_img: dec 60.60/45.33/12.30 | top1 56.93/40.65/8.52 | dv 58.02/41.31/8.59 | or5 61.65/43.72/9.11 | or10 64.64/45.88/9.59 | or30 71.55/52.07/11.46
+sec: 578 (decode 403) n_kpt 41366 n_pair 6300
