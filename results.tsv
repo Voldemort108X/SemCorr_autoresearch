@@ -127,3 +127,6 @@ ref	8a85faa	1.560	1.53	1.99	1.16	69.69	54.47	11.02	157	robust	robust	ref_8a85faa
 21	c42a5fe	3.907	4.05	4.76	2.91	57.35	41.02	10.00	563	T3	analysis	21_c42a5fe_tlr_ap10kcf_xtta T3 with x features (31) on TTA descriptors [vs_dv +3.345 std 0.114; split ap10kcf/tlr]
 21	c42a5fe	4.778	5.10	5.10	4.14	91.59	78.67	95.44	83	T3	analysis	21_c42a5fe_tlr_pascal_xtta T3 with x features (31) on TTA descriptors [vs_dv +2.209 std 0.363; split pascal/tlr]
 21	c42a5fe	5.642	6.21	7.40	3.31	74.54	59.79	13.39	445	T3	analysis	21_c42a5fe_val_xtta T3 with x features (31) on TTA descriptors [vs_dv +4.751 std 0.137; split val/tlr]
+22	cb9e636	2.033	2.05	3.02	1.03	58.26	38.50	5.52	588	T3	analysis	22_cb9e636_spairu_test_pdtta T3 x2+TTA with extra perm-dropped training pairs [vs_dv +1.522 std 0.164; split spairu_test/tlr]
+22	cb9e636	4.046	4.35	4.18	3.60	90.85	77.75	94.90	87	T3	analysis	22_cb9e636_tlr_pascal_pdtta T3 x2+TTA with extra perm-dropped training pairs [vs_dv +1.477 std 0.413; split pascal/tlr]
+22	cb9e636	5.845	6.31	7.85	3.37	74.64	60.24	13.45	452	T3	analysis	22_cb9e636_val_pdtta T3 x2+TTA with extra perm-dropped training pairs [vs_dv +4.954 std 0.140; split val/tlr]
