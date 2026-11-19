@@ -195,6 +195,18 @@ TTA; DIY-SC was never used for selection, so this is reported as a limitation.
 - SPair-U and PF-Pascal have no keypoint mirror permutation, so the flip ensemble is off there.
 - Estimating mirror partners from the features instead was tested and is harmful (dev +1.4 vs +4.4).
 
+Other features × new data (settings still from TLR dev; Déjà Vu at λ .5):
+
+| | CleanDIFT SPair-U | CleanDIFT AP-10K CF | DIY-SC SPair-U |
+|---|---|---|---|
+| Déjà Vu | +0.39 | +0.46 | +0.35 |
+| DV++ | +1.67 | +3.73 (57.23/40.77/10.35) | **−0.31** |
+| DV++ without TTA | +0.98 | – | +0.78 |
+
+- TTA is what hurts the supervised DIY-SC descriptors (val −0.45, SPair-U −1.09 vs DV++ without TTA); it helps every
+  zero-shot feature.
+- Recommendation (post-hoc; DIY-SC was never used for any decision): use TTA only for zero-shot foundation features.
+
 ## 5. Failure analysis
 - **Remaining errors (dev, DV++, wrong @0.10 = 27.1 % of keypoints).** Breakdown, as % of all keypoints:
 
