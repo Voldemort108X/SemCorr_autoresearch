@@ -130,3 +130,4 @@
 - (re-added after discard reset) TTA_ARMSEL on the 4-cat subset: M 0 +4.572, M .02 +4.369 (seq17 +4.366); TF32 inside
   the TTA does not change accuracy (+4.339). First full-dev seq18 run timed out (>600 s, TTA on both arms); 8-step
   selection version ran in 556 s: +4.770 → discarded (within noise).
+- T3 stability: seq16 model retrained with seed 1 → val +5.962 (seed 0 +6.090).
