@@ -28,6 +28,7 @@ WFL, LFL = 0.0, 0.25          # flip-ensemble: weight of the other-arm similarit
 K = 30
 WIN, BETA, REF_ENS = 2, 0.03, 0.5
 REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + separable parabola sub-patch offset | 'mix'
+ROW_SMOOTH = 0.0   # weight of a smoothed-query view in the forward row (selection only)
 REF_ORIG, SEL_ORIG = False, False   # TTA ablations: refinement / selection on the non-adapted descriptors
 DECOL_R, DECOL_EX, DECOL_MARGIN = 0.0, 3.0, 1e9   # mirror-pair de-collision radius / exclusion / max score drop
 SWAP_T = -1.0    # mirror-pair orientation test: swap the two predictions of a mirror pair if cos < -SWAP_T (-1 = off)
@@ -79,6 +80,9 @@ def decode_arm(pair, a):
         if ENS_MIN > 0:   # penalise disagreement of the two views (soft AND)
             ens = ens - ENS_MIN * (st.sim_kpts - fr).abs()
         row = torch.where(ok.unsqueeze(1), ens, st.sim_kpts)
+        if ROW_SMOOTH > 0:   # third view for the forward row only: 3x3-smoothed own query
+            qs = smooth_query(A['desc'], st.idx_valid, nP, w=1.0)
+            row = (row + ROW_SMOOTH * (qs @ st.img2_valid.t())) / (1 + ROW_SMOOTH)
         st.sim_kpts = row
         st._sorted_cache = {}
     if K_PEAK > 0:
@@ -383,6 +387,19 @@ def peak_pool(st, kp, r, ktop):
     inv = torch.full((nP * nP,), 0, dtype=torch.long, device=st.device)
     inv[st.tgt_valid_idx] = torch.arange(st.tgt_valid_idx.numel(), device=st.device)
     return inv[sel]
+
+
+def smooth_query(desc, idx, nP, w=1.0):
+    """l2-normalised desc[idx] + w * sum of its in-grid 8-neighbours (3x3 box)."""
+    y, x = idx // nP, idx % nP
+    q = desc[idx].clone()
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            if dy == 0 and dx == 0:
+                continue
+            yy, xx = (y + dy).clamp(0, nP - 1), (x + dx).clamp(0, nP - 1)
+            q = q + w * desc[yy * nP + xx]
+    return q / q.norm(dim=-1, keepdim=True).clamp(min=1e-8)
 
 
 def other_arm_kp(pair, a, st):

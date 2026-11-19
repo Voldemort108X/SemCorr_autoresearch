@@ -137,3 +137,5 @@
 - DECOL R1.5 M.02 full dev +4.746 vs +4.712 → noise; not kept.
 - TTA ablation (full dev; seq17 +4.712, no TTA ≈ +3.70): TTA only for selection (refine on original) +4.281 (@.10 +4.75, @.01 +2.46); TTA only for refinement (select on original) +4.259 (@.10 +4.18, @.01 +2.98) → TTA helps both the choice (@.10) and the localisation (@.01).
 - seq 19 [T3] dual features: dev +6.339 vs +6.273 (+0.066 < std 0.140) → DISCARD.
+- ROW_SMOOTH (3x3-smoothed own query as a third view in the forward row only): subset .3 +4.463, .7 +4.497 (base +4.366); full dev .7 +4.824 (+0.11, borderline).
+- ROW_SMOOTH full dev 1.0 +4.766, 1.5 +4.684 → best .7 +4.824 (+0.11 < keep threshold); not kept.
