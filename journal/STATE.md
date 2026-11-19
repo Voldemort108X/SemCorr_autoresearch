@@ -14,6 +14,7 @@
 - Reference: Déjà Vu test +0.823; Déjà Vu + W2 refinement test +1.750; oracle top-5 test 77.11/59.68/12.23.
 - Tools: scripts/run.sh (OVR/TAG env), sweep.py ("cats=..." subset), prepare_gen.py eval <ds>, error_types.py,
   tables.py, dump_t3.py (T3_EXTRA/T3_TTA/...), addrow.py, discard.sh (keeps results.tsv).
-- Reports: reports/daily_2026-11-19.md (sent), reports/FINAL_REPORT_draft.md, reports/tables_test.md.
+- Reports: reports/daily_2026-11-19.md (sent), reports/FINAL_REPORT.md (v1 written 2026-11-19; update if anything
+  changes), reports/tables_test.md (per-category, per-image, bootstrap CIs).
 - Next: (1) mirror-ambiguity signal (occlusion/depth cues?); (2) DIY-SC-safe TTA (dev-selectable); (3) final report
   writing from 2026-11-22 12:00; daily report 2026-11-20 ~04:00.
