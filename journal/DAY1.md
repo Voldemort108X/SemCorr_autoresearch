@@ -156,3 +156,4 @@
 - Around seq23 (dev): REF_ENS 1.5 +4.830, ROW_SMOOTH 1.0 +4.866, .5 +4.879 → seq23 (+4.918) locally optimal.
 - seq23 finalist (partial): TEST +4.627, CleanDIFT val +4.684, DIY-SC val +2.416, SPair-U +1.936, Pascal +4.184, AP-10K +3.722 (seq17: +4.318/+4.519/+2.470/+1.674/+3.825/+3.562).
 - seq23 finalist complete: CleanDIFT test +4.499, DIY-SC test +2.581, dev2 +4.614; test bootstrap seq23−seq17 +0.309 [0.225, 0.397]. FINAL_REPORT v2 uses seq23 as DV++.
+- T3+TTA 3-seed ensemble (A/B): singles 50.29/50.27/50.20, ensemble 50.28 → no gain.
