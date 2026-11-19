@@ -123,3 +123,7 @@ ref	1939f2f	0.350	0.68	0.29	0.09	65.17	42.83	5.33	24	gen	gen	ref_1939f2f_diysc_s
 ref	8a85faa	1.560	1.53	1.99	1.16	69.69	54.47	11.02	157	robust	robust	ref_8a85faa_dev2_dvW2: second selection split dev2 (300 trn pairs/cat, seed 1, disjoint from dev) [vs_dv +0.773 std 0.074; split dev2/tlr]
 14	8a85faa	3.665	4.33	4.68	1.99	72.48	57.16	11.85	138	robust	robust	14_8a85faa_dev2_seq14: second selection split dev2 (300 trn pairs/cat, seed 1, disjoint from dev) [vs_dv +2.878 std 0.116; split dev2/tlr]
 17	8a85faa	4.452	4.66	5.71	2.98	72.82	58.20	12.84	436	robust	robust	17_8a85faa_dev2_seq17: second selection split dev2 (300 trn pairs/cat, seed 1, disjoint from dev) [vs_dv +3.665 std 0.120; split dev2/tlr]
+21	c42a5fe	2.271	2.59	3.17	1.06	58.81	38.65	5.54	572	T3	analysis	21_c42a5fe_spairu_test_xtta T3 with x features (31) on TTA descriptors [vs_dv +1.761 std 0.156; split spairu_test/tlr]
+21	c42a5fe	3.907	4.05	4.76	2.91	57.35	41.02	10.00	563	T3	analysis	21_c42a5fe_tlr_ap10kcf_xtta T3 with x features (31) on TTA descriptors [vs_dv +3.345 std 0.114; split ap10kcf/tlr]
+21	c42a5fe	4.778	5.10	5.10	4.14	91.59	78.67	95.44	83	T3	analysis	21_c42a5fe_tlr_pascal_xtta T3 with x features (31) on TTA descriptors [vs_dv +2.209 std 0.363; split pascal/tlr]
+21	c42a5fe	5.642	6.21	7.40	3.31	74.54	59.79	13.39	445	T3	analysis	21_c42a5fe_val_xtta T3 with x features (31) on TTA descriptors [vs_dv +4.751 std 0.137; split val/tlr]

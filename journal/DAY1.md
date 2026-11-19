@@ -149,3 +149,4 @@
   (57.23/40.77/10.35); CleanDIFT SPair-U: dv +0.387 → DV++ +1.668 (no TTA +0.984); DIY-SC SPair-U: dv +0.350 →
   DV++ −0.312, DV++ without TTA +0.775 → TTA is what hurts the supervised DIY-SC features (val −0.45, SPair-U −1.09).
 - dev2 robustness split (300 other trn pairs/cat): dv +0.787, dvW2 +1.560, seq14 +3.665, seq17 +4.452 (dev: +0.777/+1.767/+3.823/+4.712) → the dev-based selection replicates on a fresh trn sample.
+- seq21 (analysis) T3 with the 31 x features on TTA descriptors: val +5.642, SPair-U +2.271, Pascal +4.778, AP-10K +3.907 (seq16 x2: +6.090/+2.029/+3.894/+4.196) → x2 features help SPair/AP-10K, x generalises better to perm-less sets (SPair-U, Pascal).
