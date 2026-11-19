@@ -251,6 +251,14 @@ A second, disjoint selection split (dev2 = 300 other SPair trn pairs per categor
   predictions on one spot) 13 % (Déjà Vu 9 %). Gains are larger on lateral keypoints (+4.8 @0.10 over top-1) than on
   central ones (+2.7).
 
+Test split, same breakdown (% of all keypoints; wrong @.10 | mirror / other kp / near-miss / far):
+
+| decoder | wrong | mirror | other kp | near-miss | far |
+|---|---|---|---|---|---|
+| Déjà Vu | 28.78 | 5.93 | 11.62 | 5.69 | 5.54 |
+| DV++ (seq 23) | 25.54 | 6.22 | 10.35 | 4.75 | 4.21 |
+| T3 + TTA | 23.94 | 5.87 | 9.89 | 4.38 | 3.80 |
+
 ## 6. Negative results (dev; details in journal/DAY1.md)
 Within noise or harmful:
 - **Pair-level 2-D geometry:** MNN affine, MLS, dense-flow prior, keypoint ICM/MRF, one-to-one assignment, iterated
