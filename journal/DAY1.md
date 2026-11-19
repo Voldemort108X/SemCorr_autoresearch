@@ -131,3 +131,8 @@
   the TTA does not change accuracy (+4.339). First full-dev seq18 run timed out (>600 s, TTA on both arms); 8-step
   selection version ran in 556 s: +4.770 → discarded (within noise).
 - T3 stability: seq16 model retrained with seed 1 → val +5.962 (seed 0 +6.090).
+- Analysis (TEST, per-kpt PCK@.10/.05/.01): lateral kps (75.7 %, have a mirror partner) top1 66.73/51.13/10.40, dv 68.32/52.10/10.56, seq17 71.53/57.31/13.63, seq16 73.80/60.07/14.44; central kps top1 79.30/63.35/13.05, dv 80.28/63.95/13.14, seq17 82.04/66.92/15.74, seq16 83.10/68.00/16.04 → gains are larger on lateral parts (+4.8 vs +2.7 @.10 for seq17 vs top1).
+- Mirror-pair outcomes (dev, pairs both evaluated, n=8975): seq17 both-ok 62.97 %, swap 4.11, collision 13.05, one wrong 11.05, both wrong 8.81; dv 57.13 / 4.11 / 9.07 / 17.25 / 12.45 → the flip ensemble raises collisions.
+- DECOL (mirror-pair de-collision; subset, base +4.366): forced R1.5 +3.544, R1.5 EX5 +2.324; with score-margin M .05 +4.452, M .02 +4.489, M .1 +4.306; R2.5 M.05 +4.444.
+- DECOL R1.5 M.02 full dev +4.746 vs +4.712 → noise; not kept.
+- TTA ablation (full dev; seq17 +4.712, no TTA ≈ +3.70): TTA only for selection (refine on original) +4.281 (@.10 +4.75, @.01 +2.46); TTA only for refinement (select on original) +4.259 (@.10 +4.18, @.01 +2.98) → TTA helps both the choice (@.10) and the localisation (@.01).

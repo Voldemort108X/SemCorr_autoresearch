@@ -28,6 +28,8 @@ WFL, LFL = 0.0, 0.25          # flip-ensemble: weight of the other-arm similarit
 K = 30
 WIN, BETA, REF_ENS = 2, 0.03, 0.5
 REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + separable parabola sub-patch offset | 'mix'
+REF_ORIG, SEL_ORIG = False, False   # TTA ablations: refinement / selection on the non-adapted descriptors
+DECOL_R, DECOL_EX, DECOL_MARGIN = 0.0, 3.0, 1e9   # mirror-pair de-collision radius / exclusion / max score drop
 SWAP_T = -1.0    # mirror-pair orientation test: swap the two predictions of a mirror pair if cos < -SWAP_T (-1 = off)
 K_PEAK, R_NMS, K_TOP = 0, 1, 0   # peak pool: K_PEAK local maxima (NMS radius R_NMS) of the forward row + top K_TOP patches
 DENSE_MU, DENSE_R = 0.0, 6.0   # dense-flow residual weight / source radius (patches)
@@ -174,6 +176,8 @@ def decode_arm(pair, a):
             score = s0 - MU * r.clamp(max=CAP) / nP
     score = score.masked_fill(~in_pool, -1e9)
     best = score.argmax(1)
+    if DECOL_R > 0:
+        best = decollide(pair, a, st, score, pid, best)
     bp = pid.gather(1, best[:, None])[:, 0]
     if _STATS is not None:   # analysis hook: pair-level evidence for this arm (source-side info only)
         vk = A['kp_valid'][st.valid_kpt_indices]
@@ -188,6 +192,14 @@ def decode_arm(pair, a):
     s2d = st.full_sim_2d
     if REF_ENS > 0:
         s2d = (s2d + REF_ENS * fl_map) / (1 + REF_ENS)
+    if (REF_ORIG or SEL_ORIG) and '_orig' in pair:   # ablation: refinement maps from the non-adapted descriptors
+        po = pair['_orig']
+        T0 = po['trg']['desc']
+        own = (po['src'][a]['desc'][st.idx_valid] @ T0.t()).masked_fill(~st.tgt_mask.unsqueeze(0), -float('inf'))
+        lo_, ok_ = other_arm_kp(pair, a, st)
+        flo = (po['src'][1 - a]['desc'][lo_] @ T0.t()).masked_fill(~st.tgt_mask.unsqueeze(0), -float('inf'))
+        flo = torch.where(ok_.unsqueeze(1), flo, own)
+        s2d = ((own + REF_ENS * flo) / (1 + REF_ENS)).view(-1, nP, nP)
     if REF_CYC > 0:   # refine on a score map: similarity minus the cycle penalty of every target patch
         bxy = torch.stack([st.back_nn_x, st.back_nn_y], -1)                       # [Pt,2]
         dcm = (bxy.unsqueeze(0) - qxy.unsqueeze(1)).norm(dim=-1)                   # [M,Pt]
@@ -317,6 +329,39 @@ def mirror_swap(pair, a, st, qxy, p):
         if cos < -SWAP_T:
             out[k], out[kj] = p[kj], p[k]
     return out
+
+
+def decollide(pair, a, st, score, pid, best):
+    """Mirror-pair de-collision: if a keypoint and its mirror partner (both decoded in this arm) chose candidates within
+    DECOL_R patches, the one with the higher score keeps it and the other takes its best candidate farther than
+    DECOL_EX patches from the kept location (if any)."""
+    nP = st.num_patches
+    vi = st.valid_kpt_indices
+    M = vi.numel()
+    use = pair['src'][a]['kp_valid'][vi] & (pair['arm_of_kpt'][vi] == a)
+    pos = torch.full((pair['perm'].numel(),), -1, dtype=torch.long, device=st.device)
+    pos[vi] = torch.arange(M, device=st.device)
+    cxy = torch.stack([(pid % nP).float(), (pid // nP).float()], -1)            # [M,K,2]
+    r = torch.arange(M, device=st.device)
+    best = best.clone()
+    bs = score[r, best]
+    for k in torch.nonzero(use, as_tuple=True)[0].tolist():
+        i = int(vi[k]); j = int(pair['perm'][i])
+        if j <= i:
+            continue
+        kj = int(pos[j])
+        if kj < 0 or not bool(use[kj]):
+            continue
+        pk, pj = cxy[k, best[k]], cxy[kj, best[kj]]
+        if float((pk - pj).norm()) > DECOL_R:
+            continue
+        keep, move = (k, kj) if float(bs[k]) >= float(bs[kj]) else (kj, k)
+        kl = cxy[keep, best[keep]]
+        far = (cxy[move] - kl).norm(dim=-1) > DECOL_EX
+        alt = score[move].masked_fill(~far, -1e9)
+        if float(alt.max()) > -1e8 and float(score[move, best[move]] - alt.max()) <= DECOL_MARGIN:
+            best[move] = alt.argmax()
+    return best
 
 
 def peak_pool(st, kp, r, ktop):
@@ -489,6 +534,8 @@ def decode(pair):
                 _T3[TTA_PRIOR] = torch.from_numpy(_np.load(TTA_PRIOR)).float().cuda()
             init = _T3[TTA_PRIOR]
         orig = pair
+        if REF_ORIG or SEL_ORIG:
+            orig_keep = pair
         with torch.enable_grad():
             ta = (1 if bool((pair['arm_of_kpt'] == 1).any()) else 0) if TTA_ARM < 0 else TTA_ARM
             pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, both=TTA_BOTH, obj=TTA_OBJ, rank=TTA_RANK, groups=TTA_GROUPS, sep=TTA_SEP, hand=TTA_HAND, qw=TTA_QW, init=init, sem=TTA_SEM, blocknorm=TTA_BLOCKNORM, nomask=TTA_NOMASK)
@@ -503,6 +550,11 @@ def decode(pair):
             cat = lambda d0, d1: torch.cat([d0 * (1 - m) ** 0.5, d1 * m ** 0.5], 1)
             pair = dict(pair, src=[dict(S1, desc=cat(S0['desc'], S1['desc'])) for S0, S1 in zip(orig['src'], pair['src'])],
                         trg=dict(pair['trg'], desc=cat(orig['trg']['desc'], pair['trg']['desc'])))
+    if (REF_ORIG or SEL_ORIG) and TTA_STEPS > 0:
+        if SEL_ORIG:   # ablation: select on the original descriptors, refine on the adapted ones
+            pair = dict(orig_keep, _orig=pair)
+        else:
+            pair = dict(pair, _orig=orig_keep)
     if FORCE_ARM >= 0:
         pair = force_arm(pair, FORCE_ARM)
     elif ARM_PAIR and not T3_MODEL:   # (training-free path only) decode ALL keypoints in the arm chosen for the pair (arm-1 queries rebuilt from source info)
