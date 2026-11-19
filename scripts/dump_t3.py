@@ -21,6 +21,10 @@ if REFCYC > 0:
     FT.CFG['REF_CYC'] = REFCYC
 TTA = int(os.environ.get('T3_TTA', '0'))
 DUAL = os.environ.get('T3_DUAL', '0') == '1'
+S23 = os.environ.get('T3_S23', '0') == '1'
+if S23:
+    FT.CFG['ROW_SMOOTH'] = 0.7
+    FT.CFG['REF_ENS'] = 1.0
 PEAKS = int(os.environ.get('T3_PEAKS', '0'))
 if PEAKS > 0:
     FT.CFG['PEAKS'] = PEAKS
@@ -83,7 +87,7 @@ with torch.no_grad():
         print(cat, f'{time.time() - t0:.0f}s', flush=True)
         del F_
 out = {k: (np.concatenate(v) if k not in ('cat', 'pair') else np.array(v)) for k, v in rows.items()}
-tag = {0: '', 1: '_x', 2: '_x2'}[EXTRA] + (f'_pd{PERMDROP:g}' if PERMDROP > 0 else '') + (f'_rc{REFCYC:g}' if REFCYC > 0 else '') + (f'_pk{PEAKS}' if PEAKS > 0 else '') + (f'_tta{TTA}' if TTA > 0 else '') + ('_dual' if DUAL else '') + (f'_n{maxp}' if maxp else '')
+tag = {0: '', 1: '_x', 2: '_x2'}[EXTRA] + (f'_pd{PERMDROP:g}' if PERMDROP > 0 else '') + (f'_rc{REFCYC:g}' if REFCYC > 0 else '') + (f'_pk{PEAKS}' if PEAKS > 0 else '') + (f'_tta{TTA}' if TTA > 0 else '') + ('_dual' if DUAL else '') + ('_s23' if S23 else '') + (f'_n{maxp}' if maxp else '')
 tag += '' if cats == P.CATS else '_' + '-'.join(cats)
 np.savez(f'{P.cdir("tlr", split)}/t3{tag}.npz', **out, feat_names=np.array(list({0: FT.FEAT_NAMES, 1: FT.FEAT_NAMES2, 2: FT.FEAT_NAMES3}[EXTRA]) * (2 if DUAL else 1)))
 print('saved', out['F'].shape, f'{time.time() - t0:.0f}s')

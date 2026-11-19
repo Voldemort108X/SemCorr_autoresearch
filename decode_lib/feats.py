@@ -58,6 +58,15 @@ def arm_candidates(pair, a, cfg=CFG, with_feats=True, extra=False, fixed_idx=Non
     fr = O['desc'][lo] @ st.img2_valid.t()                                      # [M, Pt]
     w = cfg['NOM_ENS']
     row = torch.where(ok.unsqueeze(1), (own_rows + w * fr) / (1 + w), own_rows)
+    if cfg.get('ROW_SMOOTH', 0) > 0:   # seq-23 third view: 3x3-smoothed own query in the forward row
+        y, x = st.idx_valid // nP, st.idx_valid % nP
+        qs = A['desc'][st.idx_valid].clone()
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                if dy or dx:
+                    qs = qs + A['desc'][(y + dy).clamp(0, nP - 1) * nP + (x + dx).clamp(0, nP - 1)]
+        qs = qs / qs.norm(dim=-1, keepdim=True).clamp(min=1e-8)
+        row = (row + cfg['ROW_SMOOTH'] * (qs @ st.img2_valid.t())) / (1 + cfg['ROW_SMOOTH'])
     st.sim_kpts = row
     st._sorted_cache = {}
     _, _, _, cutoff_k = C.nominate(st, max_k=cfg['K'])
