@@ -144,3 +144,7 @@
 - TTA_SUB (sub-sample patches in the TTA objective): 512 +4.626, 256 +4.570 (full dev; all +4.712) and NO speed-up (TTA is latency-bound: 58.6 / 59.9 / 54.0 ms per pair) → fewer steps is the only speed lever (10 steps +4.496).
 - Lite DV++ (TTA + flip ensemble + DV cycle + refinement; no consensus/RR/other-arm cycle/ARM_PAIR): dev +3.831; without the DV cycle +2.479 (seq17 +4.712).
 - K (pool cap) under TTA: 15 → +4.720, 50 → +4.660 (30: +4.712): insensitive.
+- Gen with other features (SPair-U test, settings from TLR dev): CleanDIFT dv +0.387 → DV++ +1.668; DIY-SC dv +0.350 → DV++ −0.312 (!) — DV++ hurts DIY-SC on unseen keypoints (checking without TTA).
+- Other-feature generalisation (settings from TLR dev): CleanDIFT AP-10K CF: dv(λ.5) +0.462 → DV++ +3.730
+  (57.23/40.77/10.35); CleanDIFT SPair-U: dv +0.387 → DV++ +1.668 (no TTA +0.984); DIY-SC SPair-U: dv +0.350 →
+  DV++ −0.312, DV++ without TTA +0.775 → TTA is what hurts the supervised DIY-SC features (val −0.45, SPair-U −1.09).
