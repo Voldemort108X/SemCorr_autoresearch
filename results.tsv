@@ -130,3 +130,5 @@ ref	8a85faa	1.560	1.53	1.99	1.16	69.69	54.47	11.02	157	robust	robust	ref_8a85faa
 22	cb9e636	2.033	2.05	3.02	1.03	58.26	38.50	5.52	588	T3	analysis	22_cb9e636_spairu_test_pdtta T3 x2+TTA with extra perm-dropped training pairs [vs_dv +1.522 std 0.164; split spairu_test/tlr]
 22	cb9e636	4.046	4.35	4.18	3.60	90.85	77.75	94.90	87	T3	analysis	22_cb9e636_tlr_pascal_pdtta T3 x2+TTA with extra perm-dropped training pairs [vs_dv +1.477 std 0.413; split pascal/tlr]
 22	cb9e636	5.845	6.31	7.85	3.37	74.64	60.24	13.45	452	T3	analysis	22_cb9e636_val_pdtta T3 x2+TTA with extra perm-dropped training pairs [vs_dv +4.954 std 0.140; split val/tlr]
+23	5b1bd72	4.918	4.97	6.50	3.28	73.16	58.56	12.94	420	T1	keep	training-free seq17 + ROW_SMOOTH .7 + REF_ENS 1.0 (combined near-misses) [vs_dv +4.140 std 0.125; split dev/tlr]
+23	5b1bd72	4.770	4.97	6.28	3.07	73.30	58.66	13.15	419	T1	keep	seq23 val (report) [vs_dv +3.879 std 0.126; split val/tlr]

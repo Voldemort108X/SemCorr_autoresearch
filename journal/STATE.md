@@ -4,6 +4,8 @@
 - Caches (~170 GB): tlr (dev/val/test/trn_train/spairu_test, gen_pascal, gen_ap10kcf), cleandift (dev/val/test),
   diysc (val/test). T3 tables in cache/tlr/{dev,trn_train}/t3_*.npz.
 - Selection = dev (TLR, 5,400 SPair trn pairs). Bootstrap std of Δ vs dv ≈ 0.05–0.14. Run limit 600 s (TTA runs ~410 s).
+- BEST training-free: seq 23 (commit 5b1bd72; OVR="T3_MODEL="): dev +4.918, val +4.770 = seq 17 + ROW_SMOOTH .7
+  (3x3-smoothed own query as a third view in the forward row) + REF_ENS 1.0. Finalist runs queued (scripts/queue_final23.sh).
 - BEST training-free: seq 17 (commit bd80053), run with OVR="T3_MODEL=": dev +4.712, val +4.563, TEST +4.318
   (74.08/59.64/14.15); CleanDIFT val/test +4.519/+4.293; DIY-SC +2.470/+2.739; SPair-U +1.674; Pascal +3.825; AP-10K +3.562.
   = TTA (decode_lib/tta.py) + flip ensemble + DV cycle (+other-arm cycle) + consensus RANSAC + reverse rank + ARM_PAIR +

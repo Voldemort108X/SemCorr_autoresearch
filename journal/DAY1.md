@@ -152,3 +152,4 @@
 - seq21 (analysis) T3 with the 31 x features on TTA descriptors: val +5.642, SPair-U +2.271, Pascal +4.778, AP-10K +3.907 (seq16 x2: +6.090/+2.029/+3.894/+4.196) → x2 features help SPair/AP-10K, x generalises better to perm-less sets (SPair-U, Pascal).
 - seq22 (analysis) T3 x2+TTA + 1000/cat perm-dropped pairs: val +5.845, SPair-U +2.033, Pascal +4.046 (seq16: +6.090/+2.029/+3.894) → no generalisation benefit; seq16 stays.
 - seq 23 hypothesis [T1/T4, combine near-misses]: seq17 + ROW_SMOOTH .7 (smoothed-query view in the forward row) + REF_ENS 1.0 (equal-weight flip view in refinement); sweep dev +4.918.
+- seq 23 → kept: dev +4.918 (+0.206 > std 0.125), val +4.770 (seq17 +4.563).
