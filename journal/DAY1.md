@@ -126,3 +126,7 @@
 - TTA ensemble (dsmax + cyc solutions, concatenated): +4.750 vs +4.712 (noise) at 2x TTA cost → not kept.
 - Re-tuning under TTA (full dev, seq17 = +4.712): NOM_ENS 1 +4.729, REF_ENS 1 +4.786, WIN 3 +4.425, β .02 +4.409, λ 1 +4.703, μ 1 +4.696 → all within noise or worse; seq17 is locally optimal.
 - Transfer on TEST (settings from TLR dev): CleanDIFT dv(λ.5) +0.725 / seq17 +4.293 / seq16 +5.963; DIY-SC dv +0.292 / seq17 +2.739 / seq16 +3.083.
+- seq 18 [T4] arm re-selection by post-TTA confidence: full dev +4.770 (+0.058 < boot std 0.132; 556 s) → DISCARD (subset +0.2 did not hold on full dev).
+- (re-added after discard reset) TTA_ARMSEL on the 4-cat subset: M 0 +4.572, M .02 +4.369 (seq17 +4.366); TF32 inside
+  the TTA does not change accuracy (+4.339). First full-dev seq18 run timed out (>600 s, TTA on both arms); 8-step
+  selection version ran in 556 s: +4.770 → discarded (within noise).
