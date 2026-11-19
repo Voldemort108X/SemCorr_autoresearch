@@ -153,3 +153,5 @@
 - seq22 (analysis) T3 x2+TTA + 1000/cat perm-dropped pairs: val +5.845, SPair-U +2.033, Pascal +4.046 (seq16: +6.090/+2.029/+3.894) → no generalisation benefit; seq16 stays.
 - seq 23 hypothesis [T1/T4, combine near-misses]: seq17 + ROW_SMOOTH .7 (smoothed-query view in the forward row) + REF_ENS 1.0 (equal-weight flip view in refinement); sweep dev +4.918.
 - seq 23 → kept: dev +4.918 (+0.206 > std 0.125), val +4.770 (seq17 +4.563).
+- Around seq23 (dev): REF_ENS 1.5 +4.830, ROW_SMOOTH 1.0 +4.866, .5 +4.879 → seq23 (+4.918) locally optimal.
+- seq23 finalist (partial): TEST +4.627, CleanDIFT val +4.684, DIY-SC val +2.416, SPair-U +1.936, Pascal +4.184, AP-10K +3.722 (seq17: +4.318/+4.519/+2.470/+1.674/+3.825/+3.562).
