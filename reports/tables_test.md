@@ -40,3 +40,14 @@ TEST, per keypoint and per image PCK@.10/.05/.01 (selected on dev = SPair trn su
 | DV++ (seq17) | 74.08/59.64/14.15 | 69.17/54.64/12.58 | 61.0 |
 | T3 (seq9) | 75.50/61.05/14.05 | 70.63/56.07/12.46 | 17.8 |
 | T3+TTA (seq16) | 76.06/62.00/14.83 | 70.95/56.81/13.20 | 73.7 |
+
+
+Paired bootstrap over test pairs (1000 resamples), Δ = mean over thresholds of ΔPCK (per kpt):
+
+| comparison | Δ | 95% CI |
+|---|---|---|
+| seq17 − dvW2 | +2.568 | [+2.402, +2.744] |
+| seq17 − seq14 | +0.607 | [+0.462, +0.754] |
+| seq16 − seq17 | +1.669 | [+1.527, +1.804] |
+| seq16 − seq9 | +0.757 | [+0.609, +0.897] |
+| seq9 − seq17 | +0.912 | [+0.744, +1.073] |

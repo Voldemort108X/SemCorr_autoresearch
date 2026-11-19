@@ -142,3 +142,4 @@
 - seq20 (analysis) DV++-fast = seq17 decoder with fixed channel weights averaged over 720 unlabeled trn pairs (runs/tta_prior.npy; no per-pair TTA): dev +3.978, val +3.689, TEST +3.811 (seq17: +4.712/+4.563/+4.318; no TTA ≈ +3.70/+3.39/+3.56).
 - SELF_TRAIN (second TTA with CE to the decoder's own first-pass matches as pseudo-labels, then re-decode) .1/.5 → +3.919/+3.919 (subset; base +4.366): negative (confirmation bias / CE dominates).
 - TTA_SUB (sub-sample patches in the TTA objective): 512 +4.626, 256 +4.570 (full dev; all +4.712) and NO speed-up (TTA is latency-bound: 58.6 / 59.9 / 54.0 ms per pair) → fewer steps is the only speed lever (10 steps +4.496).
+- Lite DV++ (TTA + flip ensemble + DV cycle + refinement; no consensus/RR/other-arm cycle/ARM_PAIR): dev +3.831; without the DV cycle +2.479 (seq17 +4.712).
