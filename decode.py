@@ -28,6 +28,7 @@ WFL, LFL = 0.0, 0.25          # flip-ensemble: weight of the other-arm similarit
 K = 30
 WIN, BETA, REF_ENS = 2, 0.03, 0.5
 REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + separable parabola sub-patch offset | 'mix'
+SELF_TRAIN = 0.0   # >0: second TTA with pseudo-labels from a first decode (weight of the CE term), then re-decode
 ROW_SMOOTH = 0.0   # weight of a smoothed-query view in the forward row (selection only)
 REF_ORIG, SEL_ORIG = False, False   # TTA ablations: refinement / selection on the non-adapted descriptors
 DECOL_R, DECOL_EX, DECOL_MARGIN = 0.0, 3.0, 1e9   # mirror-pair de-collision radius / exclusion / max score drop
@@ -576,6 +577,27 @@ def decode(pair):
         pair = force_arm(pair, FORCE_ARM)
     elif ARM_PAIR and not T3_MODEL:   # (training-free path only) decode ALL keypoints in the arm chosen for the pair (arm-1 queries rebuilt from source info)
         pair = force_arm(pair, 1 if bool((pair['arm_of_kpt'] == 1).any()) else 0)
+    if SELF_TRAIN > 0 and TTA_STEPS > 0 and not T3_MODEL:
+        pred = _decode_after(pair)
+        # pseudo-labels: arm-0 query patches of keypoints decoded in arm 0 with a valid source location
+        A0 = orig['src'][0]
+        use = A0['kp_valid'] & (pair['arm_of_kpt'] == 0)
+        if int(use.sum()) >= 2:
+            nP = pair['nP']
+            st_ = pair['anno'] / nP
+            tp = (pred[use, 1] / st_).long().clamp(0, nP - 1) * nP + (pred[use, 0] / st_).long().clamp(0, nP - 1)
+            with torch.enable_grad():
+                from decode_lib import tta as _tta
+                p2 = _tta.adapt_pair(orig, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=0,
+                                     pseudo=(A0['kp'][use], tp), pw=SELF_TRAIN)
+            p2 = dict(p2, arm_of_kpt=pair['arm_of_kpt'],
+                      src=[dict(S2, kp=S1['kp'], kp_valid=S1['kp_valid']) for S1, S2 in zip(pair['src'], p2['src'])])
+            return _decode_after(p2)
+        return pred
+    return _decode_after(pair)
+
+
+def _decode_after(pair):
     arm = pair['arm_of_kpt']
     f = decode_arm_t3 if T3_MODEL else decode_arm
     pred = f(pair, 0)

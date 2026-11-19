@@ -1,22 +1,27 @@
 # Idea backlog (agent-maintained; seed list is in program.md §5)
+Format: `- [track] idea — status — note`. Details/numbers in journal/DAY1.md.
 
-Format: `- [track] idea — status (untried / running / seq N: Δdev, kept|discarded) — note`
+## Kept (current pipeline)
+- [T2] consensus RANSAC residual over keypoint pools — seq 1 kept (+0.36)
+- [T1/T4] flip ensemble: mirrored-partner view in row (seq 4), score (seq 2), refinement map (seq 3) — kept (+1.0 total)
+- [T4] refinement window 2 / β .03 — seq 5 kept (+1.06; also lifts dv → separate baseline)
+- [T1] reverse-rank penalty — seq 7 kept (+0.33)
+- [T4] pair-level arm for all keypoints (ARM_PAIR) — seq 11 kept (+0.11)
+- [T1] per-pair test-time channel re-weighting (TTA, label-free) — seq 15/17 kept (+0.89)
+- [T3] DeepSets listwise re-ranker (x/x2 features), on TTA features — seq 6/8/9/16 kept (val +6.09)
 
-## T2 (global, per pair) — main bet
-- [T2] global affine from MNN anchors (RANSAC) → residual penalty μ·resid/w added to Déjà Vu score — untried
-- [T2] MLS (moving least squares) local affine from MNN anchors around each query → residual penalty — untried
-- [T2] anchors = MNN ∩ cycle-consistent Déjà Vu matches of all masked source patches; IRLS — untried
-- [T2] joint decoding of the pair's keypoints: pairwise relative-geometry MRF over pools (ICM / exact on small pools) — untried
-- [T2] dense flow: decode all masked source patches, median-smooth displacement field, read keypoints — untried
-- [T2] global orientation (handedness) from anchors: sign of affine det / mirror-score, break mirror ties — untried
+## Tried, not kept (all within noise or negative)
+- [T2] MNN-affine, MLS, dense-flow prior, ICM/MRF, one-to-one, iterated consensus, adaptive μ, consensus in refinement
+- [T2] mirror handling: orientation swap, de-collision, handedness direction (HAND2), TTA handedness/semantic terms,
+  estimated partners without perm, NMS-peak pools
+- [T1] soft cycle (linear), hand cue, context agreement, relational profile, competition, query smoothing (all/row),
+  ENS_MIN, SD/DINO block weights, FL_ALIGN, RR_FL, ZROW, REF_CYC (no gain once TTA is on)
+- [T4] K, τ, quadratic / up-sampled / Gaussian-window refinement, arm re-selection by confidence (seq 18)
+- [TTA] grouped / separate / low-rank weights, other objectives, more/fewer steps, ensembles, mixing, no mask,
+  block-norm, query weighting, global prior init, self-training with pseudo-labels
+- [T3] joint attention across keypoints, two-arm pool, peak pool, perm-drop, bigger models (memorisation), dual
+  features (seq 19), rc labels, CE loss
 
-## T1 (per keypoint)
-- [T1] soft cycle (expected reverse location under softmax column) — untried
-- [T1] mirror test with the other source arm + perm — untried
-- [T1] 3×3 source neighbourhood votes for cycle — untried
-
-## T3 (learned)
-- [T3] listwise MLP over pool cues (S, rank, d_cyc, anchor residual, mirror score) trained on trn_train — untried
-
-## T4 (pool/refine)
-- [T4] K_max / τ sweep with the better re-ranker — untried
+## Open (low expected value)
+- [T3] method-specific re-rankers (CleanDIFT / DIY-SC trn) — reporting would no longer be plug-and-play
+- [T1] occlusion / depth cues for mirror (near vs far side) — no concrete signal found

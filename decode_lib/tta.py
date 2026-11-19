@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 
 
-def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False, hand=0.0, qw=0.0, init=None, return_w=False, sem=0.0, blocknorm=False, nomask=False):
+def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False, hand=0.0, qw=0.0, init=None, return_w=False, sem=0.0, blocknorm=False, nomask=False, pseudo=None, pw=1.0):
     A = pair['src'][a]
     X = A['desc'] if nomask else A['desc'][A['mask']]
     X2 = pair['src'][1 - a]['desc'][pair['src'][1 - a]['mask']]
@@ -77,6 +77,12 @@ def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj=
             sp, sn1, sn2 = (a_ * tf(Vpos, w)).sum(1), (a_ * tf(Uneg, w)).sum(1), (a_ * tf(Qj, w)).sum(1)
             logits = torch.stack([sp, sn1, sn2], 1) / 0.05
             loss = loss + sem * torch.nn.functional.cross_entropy(logits, torch.zeros(len(sp), dtype=torch.long, device=sp.device))
+        if pseudo is not None:   # self-training: pseudo-labels (query patch idx, target patch idx) from a first decode
+            qi, ti = pseudo
+            Yfull = tf(pair['trg']['desc'], wt)
+            Qp = tf(A['desc'][qi], w)
+            Sp = (Qp @ Yfull.t() / tau).masked_fill(~pair['trg']['mask'].unsqueeze(0), -1e4)
+            loss = loss + pw * torch.nn.functional.cross_entropy(Sp, ti)
         if qw > 0:        # extra confidence term on the query keypoint rows (dual-softmax restricted to the queries)
             Q = tf(A['desc'][A['kp'][A['kp_valid']]], w)
             if Q.shape[0] > 0:
