@@ -125,3 +125,4 @@
 - TTA objective dsmax+cyc combined: +4.485 (negative).
 - TTA ensemble (dsmax + cyc solutions, concatenated): +4.750 vs +4.712 (noise) at 2x TTA cost → not kept.
 - Re-tuning under TTA (full dev, seq17 = +4.712): NOM_ENS 1 +4.729, REF_ENS 1 +4.786, WIN 3 +4.425, β .02 +4.409, λ 1 +4.703, μ 1 +4.696 → all within noise or worse; seq17 is locally optimal.
+- Transfer on TEST (settings from TLR dev): CleanDIFT dv(λ.5) +0.725 / seq17 +4.293 / seq16 +5.963; DIY-SC dv +0.292 / seq17 +2.739 / seq16 +3.083.
