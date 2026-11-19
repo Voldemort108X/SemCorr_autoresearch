@@ -207,6 +207,16 @@ Other features × new data (settings still from TLR dev; Déjà Vu at λ .5):
   zero-shot feature.
 - Recommendation (post-hoc; DIY-SC was never used for any decision): use TTA only for zero-shot foundation features.
 
+### 4.4 Robustness of the selection
+A second, disjoint selection split (dev2 = 300 other SPair trn pairs per category, seed 1) reproduces the dev ranking:
+
+| | dev2 Δ | dev Δ |
+|---|---|---|
+| Déjà Vu | +0.79 | +0.78 |
+| Déjà Vu + W2 refinement | +1.56 | +1.77 |
+| DV++ without TTA | +3.67 | +3.82 |
+| DV++ | +4.45 | +4.71 |
+
 ## 5. Failure analysis
 - **Remaining errors (dev, DV++, wrong @0.10 = 27.1 % of keypoints).** Breakdown, as % of all keypoints:
 
