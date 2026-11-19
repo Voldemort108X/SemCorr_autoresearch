@@ -28,6 +28,7 @@ WFL, LFL = 0.0, 0.25          # flip-ensemble: weight of the other-arm similarit
 K = 30
 WIN, BETA, REF_ENS = 2, 0.03, 0.5
 REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + separable parabola sub-patch offset | 'mix'
+TTA_SUB = 0      # sub-sample patches in the TTA objective (0 = all)
 SELF_TRAIN = 0.0   # >0: second TTA with pseudo-labels from a first decode (weight of the CE term), then re-decode
 ROW_SMOOTH = 0.0   # weight of a smoothed-query view in the forward row (selection only)
 REF_ORIG, SEL_ORIG = False, False   # TTA ablations: refinement / selection on the non-adapted descriptors
@@ -556,7 +557,7 @@ def decode(pair):
             orig_keep = pair
         with torch.enable_grad():
             ta = (1 if bool((pair['arm_of_kpt'] == 1).any()) else 0) if TTA_ARM < 0 else TTA_ARM
-            pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, both=TTA_BOTH, obj=TTA_OBJ, rank=TTA_RANK, groups=TTA_GROUPS, sep=TTA_SEP, hand=TTA_HAND, qw=TTA_QW, init=init, sem=TTA_SEM, blocknorm=TTA_BLOCKNORM, nomask=TTA_NOMASK)
+            pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, both=TTA_BOTH, obj=TTA_OBJ, rank=TTA_RANK, groups=TTA_GROUPS, sep=TTA_SEP, hand=TTA_HAND, qw=TTA_QW, init=init, sem=TTA_SEM, blocknorm=TTA_BLOCKNORM, nomask=TTA_NOMASK, sub=TTA_SUB)
         if TTA_ENS_OBJ:   # ensemble with a second TTA solution (different objective): concatenated half-weighted descs
             with torch.enable_grad():
                 p2 = adapt_pair(orig, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, obj=TTA_ENS_OBJ)

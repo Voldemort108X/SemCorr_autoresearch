@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 
 
-def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False, hand=0.0, qw=0.0, init=None, return_w=False, sem=0.0, blocknorm=False, nomask=False, pseudo=None, pw=1.0):
+def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj='dsmax', rank=0, groups=0, sep=False, hand=0.0, qw=0.0, init=None, return_w=False, sem=0.0, blocknorm=False, nomask=False, pseudo=None, pw=1.0, sub=0):
     A = pair['src'][a]
     X = A['desc'] if nomask else A['desc'][A['mask']]
     X2 = pair['src'][1 - a]['desc'][pair['src'][1 - a]['mask']]
@@ -27,6 +27,12 @@ def adapt_pair(pair, steps=20, lr=0.05, tau=0.05, reg=1.0, a=0, both=False, obj=
         mir = (pidx // nP) * nP + (nP - 1 - pidx % nP)
         Xo, Xm = A['desc'][pidx], pair['src'][1 - a]['desc'][mir]
     Y = pair['trg']['desc'] if nomask else pair['trg']['desc'][pair['trg']['mask']]
+    if sub > 0:   # sub-sample patches for the objective (speed); deterministic
+        g = torch.Generator(device=X.device); g.manual_seed(0)
+        if X.shape[0] > sub:
+            X = X[torch.randperm(X.shape[0], generator=g, device=X.device)[:sub]]
+        if Y.shape[0] > sub:
+            Y = Y[torch.randperm(Y.shape[0], generator=g, device=Y.device)[:sub]]
     if X.shape[0] < 4 or Y.shape[0] < 4:
         return pair
     D = X.shape[1]
