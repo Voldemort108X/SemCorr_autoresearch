@@ -188,6 +188,8 @@ def main():
                     srcmf = vm(p['src_imsize'], int(A['hw'][si]), True)
                     trgm = vm(p['trg_imsize'], int(B['hw'][ti]))
                 arm = 0
+                if ARM == 'one' and not NOFLIP:
+                    arm = 1
                 if ARM == 'dist' and not NOFLIP:
                     d0 = (2 - 2 * (fs @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean()
                     d1 = (2 - 2 * (ff @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean()
