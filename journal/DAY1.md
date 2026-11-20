@@ -162,3 +162,4 @@
 - TEST error types (% of all kpts; wrong @.10 | mirror / other kp / near / far): dv 28.78 | 5.93/11.62/5.69/5.54; DV++ seq23 25.54 | 6.22/10.35/4.75/4.21; T3+TTA seq16 23.94 | 5.87/9.89/4.38/3.80 → mirror errors unchanged on test as well.
 - ROW_SMOOTH_FL (smoothed flipped view as a 4th row view) .5 → +4.924 (seq23 +4.918): nothing.
 - ROW_SMOOTH2 (5x5-smoothed view, .3) on seq23: +4.821 (−0.10): negative.
+- seq24 (analysis) DV++-fast on seq23: dev +4.171, TEST +3.973 (74.23/59.11/13.49) (seq20 fast on seq17: +3.978/+3.811).

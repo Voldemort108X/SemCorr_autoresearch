@@ -141,3 +141,5 @@ ref	8a85faa	1.560	1.53	1.99	1.16	69.69	54.47	11.02	157	robust	robust	ref_8a85faa
 23	68601a9	4.184	4.31	4.89	3.36	90.80	78.46	94.66	79	final	final	23_68601a9_tlr_pascal_tf seq23 TF finalist [vs_dv +1.616 std 0.362; split pascal/tlr]
 23	a184590	4.614	4.93	5.98	2.93	73.08	58.46	12.79	616	final	final	23_a184590_dev2_tf seq23 TF finalist [vs_dv +3.827 std 0.120; split dev2/tlr]
 23	a184590	2.581	1.62	3.45	2.68	76.06	62.09	14.78	921	final	final	23_a184590_diysc_test_tf seq23 TF finalist [vs_dv +2.399 std 0.079; split test/diysc]
+24	aad2186	4.171	4.58	5.35	2.59	72.77	57.41	12.25	148	T3-unsup	analysis	DV++-fast on seq23 (fixed prior TTA weights from unlabeled trn, no per-pair TTA) [vs_dv +3.394 std 0.122; split dev/tlr]
+24	aad2186	3.973	4.45	5.02	2.45	74.23	59.11	13.49	265	T3-unsup	analysis	DV++-fast on seq23 (fixed prior TTA weights from unlabeled trn, no per-pair TTA) [vs_dv +3.150 std 0.076; split test/tlr]
