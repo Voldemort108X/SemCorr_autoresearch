@@ -153,3 +153,6 @@ ref	8a85faa	1.560	1.53	1.99	1.16	69.69	54.47	11.02	157	robust	robust	ref_8a85faa
 16	bf02c0b	0.809	0.09	0.11	2.23	88.00	78.03	23.00	566	sup	analysis	supervised TLR (released ckpt), decoder transferred from TLR dev, no tuning: 16_bf02c0b_tlrsup_val_t3 [vs_dv +0.662 std 0.127; split val/tlrsup]
 23	468f795	1.474	0.40	0.82	3.20	88.31	78.74	23.98	414	sup	analysis	supervised TLR (released ckpt), decoder transferred from TLR dev, no tuning: 23_468f795_tlrsup_val_tf [vs_dv +1.326 std 0.113; split val/tlrsup]
 27	4c6a574	NA							600	T1	timeout	27_4c6a574_gate TTA_GATE (keep TTA iff query MNN rate does not drop): dev timed out (rc 124) -> discard; tlrsup val +1.688 (vs +1.474 TTA, +2.683 no TTA) [split dev/tlr]
+28	3cd5ff2	4.979	5.03	6.58	3.32	73.23	58.64	12.98	595	T1	discard	ARM_SEL=cons (pair arm by consensus inlier ratio, both arms decoded): +0.06 vs seq23 (std .13), 595 s [vs_dv +4.202 std 0.131; split dev/tlr]
+27	4c6a574	2.512	1.80	3.55	2.18	75.52	60.65	13.48	437	T1	analysis	TTA_GATE on DIY-SC val (report): +2.512 vs +2.416 TTA / +2.92 no TTA [vs_dv +2.272 std 0.122; split val/diysc]
+27	4c6a574	1.688	0.57	1.07	3.42	88.48	78.99	24.19	416	sup	analysis	TTA_GATE on supervised TLR val (report) [vs_dv +1.540 std 0.108; split val/tlrsup]
