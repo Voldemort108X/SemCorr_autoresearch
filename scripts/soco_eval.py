@@ -107,7 +107,7 @@ def main():
     pdir = f'{ROOT}/PairAnnotations/{SPLITS[split]}'
     classes = classes or sorted(os.listdir(pdir))
     heads = ['argmax'] + (['soft'] if SOFT else []) + [f'dv{l:g}' for l in DVL] + (['ours'] if OURS else [])
-    if OURS and ARM == 'both':
+    if OURS and ARM in ('both', 'cons'):
         heads += ['ours0', 'ours1']
     armstats = {}
     acc = {h: {} for h in heads}                    # head -> cls -> list of (soc, cc) per pair
@@ -204,7 +204,7 @@ def main():
                                 arm_of_kpt=torch.full((N,), arm_, dtype=torch.long, device='cuda') * ok1.long(),
                                 perm=pc, nP=W, anno=float(S))
                     C.PairState = lambda *a_, **k_: base(*a_, num_patches=W, anno=float(S))
-                    D._STATS = [] if ARM == 'both' else None
+                    D._STATS = [] if ARM in ('both', 'cons') else None
                     try:
                         pr = D.decode(pair)
                     finally:
@@ -220,13 +220,16 @@ def main():
                     dummy = (kpi == 0).cpu()   # keypoints the PairState treats as dummies (patch 0) fall back to argmax
                     pr[dummy] = preds['argmax'][dummy]
                     return pr, (stt[-1] if stt else None)
-                if ARM == 'both':   # analysis: decode in both arms; 'ours' = dist rule; per-pair stats saved
+                if ARM in ('both', 'cons'):   # analysis: decode in both arms; 'ours' = dist rule; per-pair stats saved
                     d0 = float((2 - 2 * (fs @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean())
                     d1 = float((2 - 2 * (ff @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean())
                     p0, s0 = run(0)
                     p1, s1 = run(1)
                     preds['ours0'], preds['ours1'] = p0, p1
-                    preds['ours'] = p1 if d1 < d0 else p0
+                    use1 = d1 < d0
+                    if ARM == 'cons' and s0 is not None and s1 is not None and s0['cons'] != s1['cons']:
+                        use1 = s1['cons'] > s0['cons']   # pair-level arm by the consensus inlier ratio (tie -> dist)
+                    preds['ours'] = p1 if use1 else p0
                     armstats.setdefault(cls, []).append(dict(d0=d0, d1=d1, s0=s0, s1=s1, nok=int(ok1.sum())))
                 else:
                     preds['ours'] = run(arm)[0]

@@ -152,3 +152,4 @@ ref	8a85faa	1.560	1.53	1.99	1.16	69.69	54.47	11.02	157	robust	robust	ref_8a85faa
 23	bf02c0b	2.683	1.37	1.82	4.86	89.28	79.74	25.63	237	sup	analysis	supervised TLR (released ckpt), decoder transferred from TLR dev, no tuning: 23_bf02c0b_tlrsup_val_notta [vs_dv +2.535 std 0.099; split val/tlrsup]
 16	bf02c0b	0.809	0.09	0.11	2.23	88.00	78.03	23.00	566	sup	analysis	supervised TLR (released ckpt), decoder transferred from TLR dev, no tuning: 16_bf02c0b_tlrsup_val_t3 [vs_dv +0.662 std 0.127; split val/tlrsup]
 23	468f795	1.474	0.40	0.82	3.20	88.31	78.74	23.98	414	sup	analysis	supervised TLR (released ckpt), decoder transferred from TLR dev, no tuning: 23_468f795_tlrsup_val_tf [vs_dv +1.326 std 0.113; split val/tlrsup]
+27	4c6a574	NA							600	T1	timeout	27_4c6a574_gate TTA_GATE (keep TTA iff query MNN rate does not drop): dev timed out (rc 124) -> discard; tlrsup val +1.688 (vs +1.474 TTA, +2.683 no TTA) [split dev/tlr]
