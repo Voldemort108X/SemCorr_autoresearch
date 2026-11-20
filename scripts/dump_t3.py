@@ -19,6 +19,7 @@ EXTRA = int(os.environ.get('T3_EXTRA', '0'))
 REFCYC = float(os.environ.get('T3_REFCYC', '0'))
 if REFCYC > 0:
     FT.CFG['REF_CYC'] = REFCYC
+MTH = os.environ.get('METHOD', 'tlr')
 TTA = int(os.environ.get('T3_TTA', '0'))
 DUAL = os.environ.get('T3_DUAL', '0') == '1'
 S23 = os.environ.get('T3_S23', '0') == '1'
@@ -34,8 +35,8 @@ t0 = time.time()
 rng = np.random.default_rng(1)
 with torch.no_grad():
     for cat in cats:
-        meta = P.load_split('tlr', split, cat)
-        F_ = P.CatFeats('tlr', cat)
+        meta = P.load_split(MTH, split, cat)
+        F_ = P.CatFeats(MTH, cat)
         idx = np.arange(len(meta['src']))
         if maxp and len(idx) > maxp:
             idx = np.sort(rng.choice(idx, maxp, replace=False))
@@ -89,5 +90,5 @@ with torch.no_grad():
 out = {k: (np.concatenate(v) if k not in ('cat', 'pair') else np.array(v)) for k, v in rows.items()}
 tag = {0: '', 1: '_x', 2: '_x2'}[EXTRA] + (f'_pd{PERMDROP:g}' if PERMDROP > 0 else '') + (f'_rc{REFCYC:g}' if REFCYC > 0 else '') + (f'_pk{PEAKS}' if PEAKS > 0 else '') + (f'_tta{TTA}' if TTA > 0 else '') + ('_dual' if DUAL else '') + ('_s23' if S23 else '') + (f'_n{maxp}' if maxp else '')
 tag += '' if cats == P.CATS else '_' + '-'.join(cats)
-np.savez(f'{P.cdir("tlr", split)}/t3{tag}.npz', **out, feat_names=np.array(list({0: FT.FEAT_NAMES, 1: FT.FEAT_NAMES2, 2: FT.FEAT_NAMES3}[EXTRA]) * (2 if DUAL else 1)))
+np.savez(f'{P.cdir(MTH, split)}/t3{tag}.npz', **out, feat_names=np.array(list({0: FT.FEAT_NAMES, 1: FT.FEAT_NAMES2, 2: FT.FEAT_NAMES3}[EXTRA]) * (2 if DUAL else 1)))
 print('saved', out['F'].shape, f'{time.time() - t0:.0f}s')
