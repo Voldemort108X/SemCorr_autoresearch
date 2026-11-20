@@ -8,6 +8,8 @@ import torch
 torch.backends.cuda.matmul.allow_tf32 = False
 torch.backends.cudnn.allow_tf32 = False
 import prepare as P
+if len(sys.argv) > 3 and sys.argv[3] == 'tlrsup':
+    import scripts.sup_hook  # noqa: F401  (supervised TLR checkpoint; patches prepare)
 import decode as D
 
 seq, split = sys.argv[1], sys.argv[2]
