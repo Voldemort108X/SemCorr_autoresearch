@@ -107,6 +107,9 @@ def main():
     pdir = f'{ROOT}/PairAnnotations/{SPLITS[split]}'
     classes = classes or sorted(os.listdir(pdir))
     heads = ['argmax'] + (['soft'] if SOFT else []) + [f'dv{l:g}' for l in DVL] + (['ours'] if OURS else [])
+    if OURS and ARM == 'both':
+        heads += ['ours0', 'ours1']
+    armstats = {}
     acc = {h: {} for h in heads}                    # head -> cls -> list of (soc, cc) per pair
     t0 = time.time()
     tdec = 0.0
@@ -194,26 +197,39 @@ def main():
                     d0 = (2 - 2 * (fs @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean()
                     d1 = (2 - 2 * (ff @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean()
                     arm = int(d1 < d0)
-                pair = dict(src=[dict(desc=fsq, mask=srcm, kp=kpi, kp_valid=torch.ones(N, dtype=torch.bool, device='cuda')),
-                                 dict(desc=ffq, mask=srcmf, kp=kp1, kp_valid=ok1)],
-                            trg=dict(desc=ft, mask=trgm),
-                            arm_of_kpt=torch.full((N,), arm, dtype=torch.long, device='cuda') * ok1.long(),
-                            perm=pc, nP=W, anno=float(S))
-                C.PairState = lambda *a_, **k_: base(*a_, num_patches=W, anno=float(S))
-                try:
-                    pr = D.decode(pair)
-                finally:
-                    C.PairState = base
-                st = S / W
-                if OUT == 'corner':   # snap to the chosen patch's corner, OmniProbe's output format
-                    pr = torch.floor(pr / st) * st
-                else:                 # refined position in OmniProbe's index-space convention (patch i -> i * S / W)
-                    pr = pr - st / 2
-                pr = pr.cpu()
-                # keypoints the PairState treats as dummies (patch 0) fall back to argmax
-                dummy = (kpi == 0).cpu()
-                pr[dummy] = preds['argmax'][dummy]
-                preds['ours'] = pr
+                def run(arm_):
+                    pair = dict(src=[dict(desc=fsq, mask=srcm, kp=kpi, kp_valid=torch.ones(N, dtype=torch.bool, device='cuda')),
+                                     dict(desc=ffq, mask=srcmf, kp=kp1, kp_valid=ok1)],
+                                trg=dict(desc=ft, mask=trgm),
+                                arm_of_kpt=torch.full((N,), arm_, dtype=torch.long, device='cuda') * ok1.long(),
+                                perm=pc, nP=W, anno=float(S))
+                    C.PairState = lambda *a_, **k_: base(*a_, num_patches=W, anno=float(S))
+                    D._STATS = [] if ARM == 'both' else None
+                    try:
+                        pr = D.decode(pair)
+                    finally:
+                        C.PairState = base
+                    stt = [x for x in (D._STATS or []) if x['arm'] == arm_]
+                    D._STATS = None
+                    st = S / W
+                    if OUT == 'corner':   # snap to the chosen patch's corner, OmniProbe's output format
+                        pr = torch.floor(pr / st) * st
+                    else:                 # refined position in OmniProbe's index-space convention (patch i -> i * S / W)
+                        pr = pr - st / 2
+                    pr = pr.cpu()
+                    dummy = (kpi == 0).cpu()   # keypoints the PairState treats as dummies (patch 0) fall back to argmax
+                    pr[dummy] = preds['argmax'][dummy]
+                    return pr, (stt[-1] if stt else None)
+                if ARM == 'both':   # analysis: decode in both arms; 'ours' = dist rule; per-pair stats saved
+                    d0 = float((2 - 2 * (fs @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean())
+                    d1 = float((2 - 2 * (ff @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean())
+                    p0, s0 = run(0)
+                    p1, s1 = run(1)
+                    preds['ours0'], preds['ours1'] = p0, p1
+                    preds['ours'] = p1 if d1 < d0 else p0
+                    armstats.setdefault(cls, []).append(dict(d0=d0, d1=d1, s0=s0, s1=s1, nok=int(ok1.sum())))
+                else:
+                    preds['ours'] = run(arm)[0]
                 tdec += time.time() - t1
             for h in heads:
                 acc[h][cls].append(score(preds[h], ks, kt, p, scale * S, map_s, map_t))
@@ -252,6 +268,8 @@ def main():
     os.makedirs(out, exist_ok=True)
     json.dump(summ, open(f'{out}/soco_metrics.json', 'w'), indent=1)
     json.dump({h: {c: acc[h][c] for c in classes} for h in heads}, open(f'{out}/soco_perpair.json', 'w'))
+    if armstats:
+        json.dump(armstats, open(f'{out}/soco_armstats.json', 'w'))
     for h in heads:
         r = res[h]
         bs = boot.get(h, {})

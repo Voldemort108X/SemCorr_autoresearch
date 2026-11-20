@@ -147,3 +147,8 @@ ref	8a85faa	1.560	1.53	1.99	1.16	69.69	54.47	11.02	157	robust	robust	ref_8a85faa
 25	a49859c	5.486	5.94	7.31	3.21	74.82	60.29	13.37	424	T3	analysis	25_a49859c_cleandift_val_cdT3 CleanDIFT-specific T3 (trained on 1000 CleanDIFT trn pairs/cat) [vs_dv +4.786 std 0.136; split val/cleandift]
 26	c8a789d	4.366	4.68	5.49	2.93	74.46	59.59	13.97	546	T1	analysis	26_c8a789d_test_tta10 seq23 with 10 TTA steps (speed/accuracy) [vs_dv +3.543 std 0.076; split test/tlr]
 26	c8a789d	4.587	4.84	5.95	2.97	73.04	58.01	12.63	292	T1	analysis	26_c8a789d_tta10 seq23 with 10 TTA steps (speed/accuracy) [vs_dv +3.809 std 0.121; split dev/tlr]
+23	ebb6380	1.451	0.24	0.94	3.17	87.94	78.43	25.01	878	sup	analysis	supervised TLR (released ckpt), decoder transferred from TLR dev, no tuning: 23_ebb6380_tlrsup_test_tf [vs_dv +1.321 std 0.070; split test/tlrsup]
+23	ebb6380	2.703	1.17	2.05	4.89	88.87	79.54	26.73	243	sup	analysis	supervised TLR (released ckpt), decoder transferred from TLR dev, no tuning: 23_ebb6380_tlrsup_test_notta [vs_dv +2.573 std 0.066; split test/tlrsup]
+23	bf02c0b	2.683	1.37	1.82	4.86	89.28	79.74	25.63	237	sup	analysis	supervised TLR (released ckpt), decoder transferred from TLR dev, no tuning: 23_bf02c0b_tlrsup_val_notta [vs_dv +2.535 std 0.099; split val/tlrsup]
+16	bf02c0b	0.809	0.09	0.11	2.23	88.00	78.03	23.00	566	sup	analysis	supervised TLR (released ckpt), decoder transferred from TLR dev, no tuning: 16_bf02c0b_tlrsup_val_t3 [vs_dv +0.662 std 0.127; split val/tlrsup]
+23	468f795	1.474	0.40	0.82	3.20	88.31	78.74	23.98	414	sup	analysis	supervised TLR (released ckpt), decoder transferred from TLR dev, no tuning: 23_468f795_tlrsup_val_tf [vs_dv +1.326 std 0.113; split val/tlrsup]
