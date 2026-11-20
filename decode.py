@@ -28,6 +28,8 @@ WFL, LFL = 0.0, 0.25          # flip-ensemble: weight of the other-arm similarit
 K = 30
 WIN, BETA, REF_ENS = 2, 0.03, 1.0
 REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + separable parabola sub-patch offset | 'mix'
+TTA_GATE = False   # per-pair label-free gate on the TTA (keep iff query mutual-NN rate does not drop)
+TTA_GATE_M = 0.0
 TTA_SUB = 0      # sub-sample patches in the TTA objective (0 = all)
 SELF_TRAIN = 0.0   # >0: second TTA with pseudo-labels from a first decode (weight of the CE term), then re-decode
 ROW_SMOOTH2 = 0.0   # weight of a 5x5-smoothed own-query view in the forward row
@@ -567,6 +569,25 @@ def decode(pair):
         with torch.enable_grad():
             ta = (1 if bool((pair['arm_of_kpt'] == 1).any()) else 0) if TTA_ARM < 0 else TTA_ARM
             pair = adapt_pair(pair, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, both=TTA_BOTH, obj=TTA_OBJ, rank=TTA_RANK, groups=TTA_GROUPS, sep=TTA_SEP, hand=TTA_HAND, qw=TTA_QW, init=init, sem=TTA_SEM, blocknorm=TTA_BLOCKNORM, nomask=TTA_NOMASK, sub=TTA_SUB)
+        if TTA_GATE:   # label-free per-pair gate: keep the adapted descriptors only if the keypoint queries' mutual-NN
+            # rate (cycle back within 1 patch, arm ta) does not drop
+            def _mnn(pp):
+                A_ = pp['src'][ta]
+                kv = A_['kp_valid'] & (A_['kp'] > 0)
+                if int(kv.sum()) == 0:
+                    return 0.0
+                nP_ = pp['nP']
+                sm, tm = A_['mask'].clone(), pp['trg']['mask']
+                sm[A_['kp'][kv]] = True
+                sv, tv = torch.nonzero(sm, as_tuple=True)[0], torch.nonzero(tm, as_tuple=True)[0]
+                q = A_['desc'][A_['kp'][kv]]
+                t = tv[(q @ pp['trg']['desc'][tv].t()).argmax(1)]
+                b_ = sv[(pp['trg']['desc'][t] @ A_['desc'][sv].t()).argmax(1)]
+                k_ = A_['kp'][kv]
+                d_ = ((b_ // nP_ - k_ // nP_) ** 2 + (b_ % nP_ - k_ % nP_) ** 2).float().sqrt()
+                return float((d_ <= 1.5).float().mean())
+            if _mnn(pair) < _mnn(orig) + TTA_GATE_M:
+                pair = orig
         if TTA_ENS_OBJ:   # ensemble with a second TTA solution (different objective): concatenated half-weighted descs
             with torch.enable_grad():
                 p2 = adapt_pair(orig, steps=TTA_STEPS, reg=TTA_REG, lr=TTA_LR, tau=TTA_TAU, a=ta, obj=TTA_ENS_OBJ)
