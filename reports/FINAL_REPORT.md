@@ -109,7 +109,7 @@ rebuilt from the source as ℓ'_i. This replaces the base per-keypoint rule, whi
 **Robustness.** Without π (SPair-U unseen keypoints, PF-Pascal), (b) and (d) fall back to the own arm. Everything else is
 unchanged.
 
-### Ablation (dev, leave one out; full DV++ ≈ +4.71)
+### Ablation (dev, leave one out; computed on seq 15/17 ≈ +4.71 — seq 23 then adds +0.21: smoothed view +0.11 alone, equal-weight refinement view +0.07 alone)
 
 | removed | dev | Δ |
 |---|---|---|
