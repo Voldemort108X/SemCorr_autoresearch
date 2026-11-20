@@ -150,6 +150,10 @@ shared images.
 
 **Stability.** A second seed gives val +5.96 vs +6.09.
 
+**Transfer of the learned head.** A re-ranker retrained on CleanDIFT trn tables (1,000 pairs per category) reaches
+CleanDIFT val +5.49 / test +5.54. The TLR-trained model applied unchanged gets +5.86 / +5.96. The cue-based features
+make the head transferable, so no per-backbone training is needed.
+
 Feature-set trade-off: the same re-ranker with the 31-feature subset (no 5×5 ring, own-map shape, self-similarity,
 object-relative positions, 2-hop cycle) on TTA descriptors gets val +5.64 (vs +6.09), SPair-U +2.27 (vs +2.03),
 PF-Pascal +4.78 (vs +3.89), AP-10K +3.91 (vs +4.20): the extra features are partly SPair-specific. The dev protocol

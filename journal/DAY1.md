@@ -163,3 +163,4 @@
 - ROW_SMOOTH_FL (smoothed flipped view as a 4th row view) .5 → +4.924 (seq23 +4.918): nothing.
 - ROW_SMOOTH2 (5x5-smoothed view, .3) on seq23: +4.821 (−0.10): negative.
 - seq24 (analysis) DV++-fast on seq23: dev +4.171, TEST +3.973 (74.23/59.11/13.49) (seq20 fast on seq17: +3.978/+3.811).
+- seq25 (analysis) CleanDIFT-specific T3+TTA (1000 CleanDIFT trn_train pairs/cat): CleanDIFT val +5.486, test +5.540 vs the TLR-trained T3 transferred unchanged (seq16): val +5.857, test +5.963 → no need for method-specific re-rankers; the cue-based T3 transfers.
