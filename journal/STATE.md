@@ -1,5 +1,17 @@
 # STATE (resume point; update at the end of every iteration)
 
+## NEW TASKS from the author (2026-11-20 ~18:30 UTC) — these now drive the loop
+1. SOCO benchmark: test DV++ (and parts of it) on SOCO and ITERATE the method on it. Selection on SOCO
+   PairAnnotations/trainsplits/train (SOCO-dev); report on intra + cross (the paper's protocol, OmniProbe eval).
+   Paper's code: SemCorr_proj/cvpr2027_results/scripts/soco_eval_onepass.py (+ soco_dejavu.py), run in
+   SemCorr_proj/Code/external/OmniProbe/.venv; paper numbers in Results/cvpr2027_reruns/soco/*.log (λ0 = argmax).
+   Our copy: scripts/soco_eval.py. Mirror permutation from left/right keypoint names.
+2. Supervised model: does the strategy help supervised features? DIY-SC on SPair (done: +2.6 test vs dv +0.3; TTA hurts)
+   and on SOCO (backbone dinov2_b14_diy_sc); look for other supervised checkpoints; make TTA safe for supervised.
+3. Paper limitations (5_results.tex): (a) gap to top-k needs global reasoning; (b) mirror-equivalent parts both
+   cycle-consistent; (c) bird/horse regress with Déjà Vu (ours: bird ±0, horse +1.4 on test).
+
+
 - Phase: LOOP, day 2 (2026-11-19). Setup done; sanity gates passed (tlr/cleandift/diysc val, SPair-U, AP-10K).
 - Caches (~170 GB): tlr (dev/val/test/trn_train/spairu_test, gen_pascal, gen_ap10kcf), cleandift (dev/val/test),
   diysc (val/test). T3 tables in cache/tlr/{dev,trn_train}/t3_*.npz.
