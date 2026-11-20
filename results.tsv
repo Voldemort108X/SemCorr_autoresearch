@@ -145,3 +145,5 @@ ref	8a85faa	1.560	1.53	1.99	1.16	69.69	54.47	11.02	157	robust	robust	ref_8a85faa
 24	aad2186	3.973	4.45	5.02	2.45	74.23	59.11	13.49	265	T3-unsup	analysis	DV++-fast on seq23 (fixed prior TTA weights from unlabeled trn, no per-pair TTA) [vs_dv +3.150 std 0.076; split test/tlr]
 25	a49859c	5.540	5.61	7.32	3.69	75.90	61.84	14.80	839	T3	analysis	25_a49859c_cleandift_test_cdT3 CleanDIFT-specific T3 (trained on 1000 CleanDIFT trn pairs/cat) [vs_dv +4.943 std 0.090; split test/cleandift]
 25	a49859c	5.486	5.94	7.31	3.21	74.82	60.29	13.37	424	T3	analysis	25_a49859c_cleandift_val_cdT3 CleanDIFT-specific T3 (trained on 1000 CleanDIFT trn pairs/cat) [vs_dv +4.786 std 0.136; split val/cleandift]
+26	c8a789d	4.366	4.68	5.49	2.93	74.46	59.59	13.97	546	T1	analysis	26_c8a789d_test_tta10 seq23 with 10 TTA steps (speed/accuracy) [vs_dv +3.543 std 0.076; split test/tlr]
+26	c8a789d	4.587	4.84	5.95	2.97	73.04	58.01	12.63	292	T1	analysis	26_c8a789d_tta10 seq23 with 10 TTA steps (speed/accuracy) [vs_dv +3.809 std 0.121; split dev/tlr]

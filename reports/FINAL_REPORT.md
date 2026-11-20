@@ -22,6 +22,7 @@ flip-view weight in the refinement); seq 17 numbers are kept where useful. Every
 | Déjà Vu + our refinement (window 2, β .03) | training-free | 71.28 / 56.26 / 12.62 | +1.75 | ~3 |
 | **DV++ (this work, seq 23)** | **training-free** | **74.46 / 59.91 / 14.42** | **+4.63** | ~60 |
 | DV++ seq 17 (without the smoothed view) | training-free | 74.08 / 59.64 / 14.15 | +4.32 | ~60 |
+| DV++ with 10 TTA steps (seq 23) | training-free | 74.46 / 59.59 / 13.97 | +4.37 | ~36 |
 | DV++-fast (seq 23 with fixed channel weights, no per-pair TTA) | unsupervised prior | 74.23 / 59.11 / 13.49 | +3.97 | ~10 |
 | **DV++ + learned re-ranker (T3)** | **learned on SPair trn** | **76.06 / 62.00 / 14.83** | **+5.99** | ~74 |
 | oracle: best of top-5 / top-30 by S (base refinement) | – | 77.11 / 59.68 / 12.23 · 87.46 / 70.27 / 15.86 | | |
