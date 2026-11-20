@@ -310,3 +310,88 @@ Within noise or harmful:
   1. Build tables: `T3_EXTRA=2 T3_TTA=20 python scripts/dump_t3.py trn_train 0`.
   2. Train: `python -c "from decode_lib import t3; t3.train('cache/tlr/trn_train/t3_x2_tta20.npz',
      'runs/t3_models/x2tta_full_60_128.pt', 60, None, h=128)"`.
+
+## 9. Follow-up tasks (requested by the author on 2026-11-20)
+
+### 9.1 SOCO benchmark (DINOv2-B/14, OmniProbe protocol)
+- **Protocol.** Our evaluator `scripts/soco_eval.py` re-implements the paper's `soco_eval_onepass.py` (image 798,
+  57×57 grid, full image padded to a square, argmax over all target patches, PCK@.10 × bbox scale, per pair → per
+  class → mean). It reproduces the paper's per-class argmax numbers to ±0.1 (e.g. aeroplane 72.4 / 83.2).
+- **Selection.** SOCO-dev = 10 pairs per class from `trainsplits/train` (1,000 pairs). Intra, cross and
+  `trainsplits/test` are report-only.
+- **Two tracks.**
+  - **S-sim:** similarity only, with no flip arm and no flip ensemble. This is comparable to the paper's decoders.
+  - **S-flip:** adds a pair-level flip arm and the flip ensemble. The mirror permutation comes from the keypoint
+    names (`left` ↔ `right`). This is the SOCO equivalent of SPair's adaptive flip.
+- **What carried over and what changed** (dev, SOC / CC gain over argmax; argmax 59.28 / 78.37; paired bootstrap std
+  ≈ .5 / .35):
+
+  | decoder | dev ΔSOC | dev ΔCC |
+  |---|---|---|
+  | OmniProbe soft-argmax (window 7) | +3.01 | +1.25 |
+  | Déjà Vu λ .5 (paper port) | +1.56 | +0.53 |
+  | DV++ S-sim, settings from SPair dev | +4.40 | +2.48 |
+  | **DV++ S-sim, SOCO-tuned (S7: μ 1.0, window 3)** | **+4.94** | **+2.89** |
+  | DV++ S-flip, SPair settings + distance arm rule (S3) | +11.35 | +3.73 |
+  | **DV++ S-flip, SOCO-tuned + arm by consensus inlier ratio (S12)** | **+12.58** | **+3.96** |
+
+  - Of the SPair knobs, only μ (consensus weight) 0.5 → 1.0 and refinement window 2 → 3 moved on SOCO.
+  - λ, reverse rank, β, TTA steps and query smoothing were flat or worse.
+  - The pair-level arm is the big lever on SOCO.
+    - The per-pair arm oracle reaches 74.57 SOC, against 71.11 for SPair's distance rule.
+    - Choosing the arm whose decode has the higher consensus inlier ratio closes about a fifth of that gap: +0.75 ± .28
+      paired, chosen offline among ~20 label-free rules on dev.
+    - Ported back to SPair (seq 28) the same rule gives +0.06, which is within noise, so it was discarded there.
+- **Full splits:** see the table below (filled in from `soco_results.tsv`).
+
+### 9.2 Supervised features
+Decoders selected on TLR dev, transferred without tuning; Δ vs top-1 (mean over PCK@.10/.05/.01):
+
+| features | Déjà Vu | DV++ (TTA) | DV++ without TTA | T3 |
+|---|---|---|---|---|
+| supervised TLR (released ckpt), val | +0.15 | +1.47 | **+2.68** | +0.81 |
+| supervised TLR, test | +0.13 | +1.45 | **+2.70** (88.87 / 79.54 / 26.73) | +0.84 |
+| DIY-SC val | +0.24 | +2.42 | **+2.92** | +2.82 |
+| DIY-SC test | +0.29 | +2.58 | (pending) | +3.08 |
+
+- **Yes, the strategy helps supervised features**, by about 10–20× Déjà Vu's gain, but only without the per-pair TTA.
+- The gain is concentrated at @.01 (+4.9 for supervised TLR test): the refinement and flip-ensemble parts transfer.
+  The selection part transfers less (+1.2 @.10), because supervised features already rank well (top-1 87.7 @.10).
+- T3 (trained on zero-shot TLR tables) transfers poorly to supervised TLR features.
+- **A label-free per-pair gate for TTA** keeps TTA only if the keypoint-query mutual-NN rate does not drop. It recovers
+  only part of the loss (supervised TLR val +1.69, DIY-SC val +2.51). On dev it exceeded the time limit, so it was
+  discarded.
+- **Rule:** turn TTA off for features trained for correspondence.
+- Supervised TLR is trained on SPair trn, which is our dev. It was therefore never used for any decision.
+
+### 9.3 The paper's stated limitations
+- **(a) "The gap to top-k needs global reasoning."** Keypoints the decoder can still recover (top-1 wrong, a correct
+  candidate in the top-30 pool, test @.10):
+
+  | decoder | recoverable keypoints promoted | top-1 → top-30-oracle gap closed |
+  |---|---|---|
+  | Déjà Vu | 16.9 % | 8.1 % |
+  | DV++ | 36.5 % | 26.5 % |
+  | T3 | 44.5 % | 35.5 % |
+
+  The pair-level parts (consensus RANSAC, pair arm, flip ensemble) are the global reasoning. They roughly triple the
+  promotion rate (`scripts/promotion.py`).
+- **(b) "Mirror-equivalent parts are both cycle-consistent."**
+  - On SPair, mirror swaps are not reduced (≈ 6 % for every decoder; §5).
+  - On SOCO, a wrong-instance pick is an error under SOC but still correct under CC, so the CC − SOC gap measures
+    these picks. The pair-level flip arm (S-flip) shrinks that gap on dev from 19.1 (argmax) and 17.1 (S-sim) to
+    10.5 points.
+  - The left/right ambiguity is therefore mostly a pair-level orientation problem when whole objects are mirrored. It
+    stays unsolved per keypoint (near vs far side).
+- **(c) "Bird / horse regress with Déjà Vu."** With TLR features (test @.10, per keypoint;
+  `reports/tables_test.md`):
+
+  | category | top-1 | Déjà Vu | DV++ seq 23 | T3 |
+  |---|---|---|---|---|
+  | horse | 73.8 | 74.4 | 76.4 | 77.6 |
+  | bird | 89.6 | 89.7 | 89.4 | 91.1 |
+
+  - Horse improves with DV++.
+  - Bird is near its ceiling and the training-free DV++ stays flat (−0.2, the only category below top-1). The learned
+    T3 gains +1.5 on bird.
+  - Déjà Vu's only regression on test is car (−0.6). DV++ improves car by +2.0.
