@@ -525,6 +525,7 @@ def reweight(pair, w):
 
 
 _STATS = None    # analysis hook (list) — set by scripts/arm_stats.py
+ARM_SEL = ''     # 'cons': pair-level arm by the consensus inlier ratio of both arms' decodes
 ARM_PAIR = True  # seq 11: pair-level arm for every keypoint (instead of the per-keypoint vis_flip rule)
 FORCE_ARM = -1   # analysis: 0 / 1 decode every keypoint in that arm (arm-1 keypoints rebuilt from source info only)
 
@@ -606,6 +607,21 @@ def decode(pair):
             pair = dict(pair, _orig=orig_keep)
     if FORCE_ARM >= 0:
         pair = force_arm(pair, FORCE_ARM)
+    elif ARM_PAIR and not T3_MODEL and ARM_SEL == 'cons':   # decode in both arms, keep the arm with the higher
+        # consensus inlier ratio (tie -> the base adaptive-pose arm)
+        global _STATS
+        base_arm = 1 if bool((pair['arm_of_kpt'] == 1).any()) else 0
+        res = []
+        for a_ in (0, 1):
+            pa = force_arm(pair, a_)
+            _STATS = []
+            pr = _decode_after(pa)
+            st_ = [x for x in _STATS if x['arm'] == a_]
+            res.append((pr, st_[-1]['cons'] if st_ else -1.0))
+        _STATS = None
+        c0, c1 = res[0][1], res[1][1]
+        pick = base_arm if c0 == c1 else int(c1 > c0)
+        return res[pick][0]
     elif ARM_PAIR and not T3_MODEL:   # (training-free path only) decode ALL keypoints in the arm chosen for the pair (arm-1 queries rebuilt from source info)
         pair = force_arm(pair, 1 if bool((pair['arm_of_kpt'] == 1).any()) else 0)
     if SELF_TRAIN > 0 and TTA_STEPS > 0 and not T3_MODEL:
