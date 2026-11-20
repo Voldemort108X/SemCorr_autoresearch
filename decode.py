@@ -30,6 +30,7 @@ WIN, BETA, REF_ENS = 2, 0.03, 1.0
 REF_MODE = 'soft'   # 'soft' window soft-argmax | 'quad': local peak (W1) + separable parabola sub-patch offset | 'mix'
 TTA_SUB = 0      # sub-sample patches in the TTA objective (0 = all)
 SELF_TRAIN = 0.0   # >0: second TTA with pseudo-labels from a first decode (weight of the CE term), then re-decode
+ROW_SMOOTH_FL = 0.0   # weight of a smoothed flipped-arm view in the forward row
 ROW_SMOOTH = 0.7   # weight of a smoothed-query view in the forward row (selection only)
 REF_ORIG, SEL_ORIG = False, False   # TTA ablations: refinement / selection on the non-adapted descriptors
 DECOL_R, DECOL_EX, DECOL_MARGIN = 0.0, 3.0, 1e9   # mirror-pair de-collision radius / exclusion / max score drop
@@ -85,6 +86,10 @@ def decode_arm(pair, a):
         if ROW_SMOOTH > 0:   # third view for the forward row only: 3x3-smoothed own query
             qs = smooth_query(A['desc'], st.idx_valid, nP, w=1.0)
             row = (row + ROW_SMOOTH * (qs @ st.img2_valid.t())) / (1 + ROW_SMOOTH)
+            if ROW_SMOOTH_FL > 0:   # fourth view: smoothed flipped-arm view (where the mirror partner is known)
+                qf = smooth_query(O['desc'], lo, nP, w=1.0)
+                rf = qf @ st.img2_valid.t()
+                row = torch.where(ok.unsqueeze(1), (row + ROW_SMOOTH_FL * rf) / (1 + ROW_SMOOTH_FL), row)
         st.sim_kpts = row
         st._sorted_cache = {}
     if K_PEAK > 0:
