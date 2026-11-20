@@ -14,6 +14,9 @@
    (pair-level flip arm 'dist' + flip ensemble, mirror perm from left/right names). Heads: argmax (exact), soft
    (OmniProbe soft_eval), dv0.5 (paper port). Dev: S2 S-sim refine +4.40 SOC/+2.48 CC (soft +3.01/+1.25, dv +1.56/+0.53);
    S3 S-flip +11.35/+3.73. Padding mask (S4) = noise. queue_soco1 (S5.x sweeps) then queue_sup1 (tlrsup val/test).
+   Sweep S5.x (one change from S2): only MU 1.0 (+4.86) and WIN 3 (+4.84) near-miss; LAM/RR/BETA/TTA steps worse or equal.
+   NOTE ROW_SMOOTH only acts when NOM_ENS>0 -> S-sim track now = SOCO_NOFLIP=1 (perm -1) instead of NOM_ENS=0.
+   KEPT S-sim best = S7: SOCO_NOFLIP=1 SOCO_ARM=none SOCO_OUT=refine OVR="MU=1.0,WIN=3": dev +4.94 SOC / +2.89 CC.
    Disk: delete cache/soco/dinov2_b14 before extracting another backbone (300 GB cap).
    Supervised: method 'tlrsup' (scripts/sup_hook.py; released supervised TLR ckpt best_856.PTH; meta symlinked from tlr).
    NOTE dev = SPair trn = the supervised model's training data -> no tuning on it; transfer settings, report val/test.
