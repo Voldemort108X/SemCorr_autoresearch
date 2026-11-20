@@ -96,6 +96,7 @@ def main():
     QB = os.environ.get('SOCO_QB', '1') == '1'
     DVL = [float(x) for x in os.environ.get('SOCO_DV', '0.5').split(',') if x]
     OURS = os.environ.get('SOCO_OURS', '1') == '1'
+    PADM = os.environ.get('SOCO_PADMASK', '0') == '1'
     SOFT = os.environ.get('SOCO_SOFT', '1') == '1'
     meta = json.load(open(f'cache/soco/{bb}/meta.json'))
     S = meta['image_size']
@@ -171,14 +172,26 @@ def main():
                 kp1 = torch.where(ok1, kf[pc.clamp(min=0)], torch.zeros_like(kf))
                 ffq = ff.clone()
                 allm = torch.ones(H * W, dtype=torch.bool, device='cuda')
+                srcm, trgm, srcmf = allm, allm, allm
+                if PADM:   # exclude the white square-padding (right / bottom) from both images: the valid image area
+                    def vm(imsize, hw, flip=False):
+                        w_, h_ = imsize[0] * S / hw, imsize[1] * S / hw
+                        c = (torch.arange(W, device='cuda').float() + 0.5) * S / W
+                        mx, my = c < w_, c < h_
+                        if flip:
+                            mx = mx.flip(0)
+                        return (my.view(-1, 1) & mx.view(1, -1)).reshape(-1)
+                    srcm = vm(p['src_imsize'], int(A['hw'][si]))
+                    srcmf = vm(p['src_imsize'], int(A['hw'][si]), True)
+                    trgm = vm(p['trg_imsize'], int(B['hw'][ti]))
                 arm = 0
                 if ARM == 'dist':
                     d0 = (2 - 2 * (fs @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean()
                     d1 = (2 - 2 * (ff @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean()
                     arm = int(d1 < d0)
-                pair = dict(src=[dict(desc=fsq, mask=allm, kp=kpi, kp_valid=torch.ones(N, dtype=torch.bool, device='cuda')),
-                                 dict(desc=ffq, mask=allm, kp=kp1, kp_valid=ok1)],
-                            trg=dict(desc=ft, mask=allm),
+                pair = dict(src=[dict(desc=fsq, mask=srcm, kp=kpi, kp_valid=torch.ones(N, dtype=torch.bool, device='cuda')),
+                                 dict(desc=ffq, mask=srcmf, kp=kp1, kp_valid=ok1)],
+                            trg=dict(desc=ft, mask=trgm),
                             arm_of_kpt=torch.full((N,), arm, dtype=torch.long, device='cuda') * ok1.long(),
                             perm=pc, nP=W, anno=float(S))
                 C.PairState = lambda *a_, **k_: base(*a_, num_patches=W, anno=float(S))
@@ -229,7 +242,7 @@ def main():
             ds.append(100 * np.mean(s1)); dc.append(100 * np.mean(c1))
         boot[h] = {'dSOC_std': float(np.std(ds)), 'dCC_std': float(np.std(dc))}
     summ = dict(split=split, backbone=bb, image_size=S, n_pairs=npair, n_classes=len(classes), max_pairs=maxp,
-                ovr=os.environ.get('OVR', ''), out=OUT, arm=ARM, qb=QB, sec=time.time() - t0, sec_decode=tdec,
+                ovr=os.environ.get('OVR', '') + (' PADMASK' if PADM else ''), out=OUT, arm=ARM, qb=QB, sec=time.time() - t0, sec_decode=tdec,
                 results=res, boot=boot)
     os.makedirs(out, exist_ok=True)
     json.dump(summ, open(f'{out}/soco_metrics.json', 'w'), indent=1)
