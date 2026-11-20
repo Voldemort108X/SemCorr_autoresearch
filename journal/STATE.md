@@ -28,6 +28,11 @@
    Disk: delete cache/soco/dinov2_b14 before extracting another backbone (300 GB cap).
    Supervised: method 'tlrsup' (scripts/sup_hook.py; released supervised TLR ckpt best_856.PTH; meta symlinked from tlr).
    NOTE dev = SPair trn = the supervised model's training data -> no tuning on it; transfer settings, report val/test.
+   2026-11-20 22:30: S-sim consensus sweep S13-S18 (CAP10, aff, THR4/9, MU1.5, K50) all within paired noise of S7
+   (scripts/soco_paired.py; best THR4 +0.20±0.21) -> discarded; S7 stays. Report §9 drafted in FINAL_REPORT.md.
+   DIY-SC SOCO: cache/soco/dinov2_b14_diy_sc extracting (disk ~289 GB after; delete a SOCO cache before any further
+   backbone). queue_soco4: D1-D4 = S7/S12 configs x TTA on/off on DIY-SC SOCO-dev (paper DIY-SC intra argmax
+   69.18/78.81, dv .5 70.07/78.79; cross 64.39/73.40 -> 64.91/72.51). queue_sup2: DIY-SC SPair test noTTA.
 3. Paper limitations (5_results.tex): (a) gap to top-k needs global reasoning; (b) mirror-equivalent parts both
    cycle-consistent; (c) bird/horse regress with Déjà Vu (ours: bird ±0, horse +1.4 on test).
 
