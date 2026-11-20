@@ -165,3 +165,13 @@
 - seq24 (analysis) DV++-fast on seq23: dev +4.171, TEST +3.973 (74.23/59.11/13.49) (seq20 fast on seq17: +3.978/+3.811).
 - seq25 (analysis) CleanDIFT-specific T3+TTA (1000 CleanDIFT trn_train pairs/cat): CleanDIFT val +5.486, test +5.540 vs the TLR-trained T3 transferred unchanged (seq16): val +5.857, test +5.963 → no need for method-specific re-rankers; the cue-based T3 transfers.
 - seq26 (analysis) seq23 with 10 TTA steps: dev +4.587, TEST +4.366 (74.46/59.59/13.97), ~36 ms/pair (20 steps: +4.627, ~60 ms).
+
+## Day 3 (2026-11-20 evening) — author's new tasks: SOCO, supervised model, paper limitations
+- SOCO: own feature cache (DINOv2-B/14, orig+flipped, 57x57) + evaluator validated vs the paper's per-class numbers (±0.1).
+  Selection on trainsplits/train (10 pairs/class). S-sim (similarity only) best S7 (+4.94 SOC / +2.89 CC vs argmax; OmniProbe
+  soft-argmax +3.01/+1.25; paper DV +1.56/+0.53). S-flip (pair arm + flip ensemble from L/R names) best S12 +12.58/+3.96.
+  Sweeps: MU 1.0 and WIN 3 help; LAM, RR, BETA, TTA steps, padding mask do not. Arm oracle 74.6 SOC vs 71.1 (dist rule) ->
+  arm by consensus inlier ratio 71.9 (S12). Not transferable to SPair (seq 28 +0.06).
+- Supervised TLR (released ckpt): DV++ w/o TTA +2.70 test (TTA +1.45; DV +0.13); T3 (trained on unsup feats) +0.81 val.
+  TTA gate (seq 27): timed out / no help -> discarded. Rule: no TTA for correspondence-trained features.
+- Limitation (a) promotion analysis (scripts/promotion.py).

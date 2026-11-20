@@ -17,6 +17,14 @@
    Sweep S5.x (one change from S2): only MU 1.0 (+4.86) and WIN 3 (+4.84) near-miss; LAM/RR/BETA/TTA steps worse or equal.
    NOTE ROW_SMOOTH only acts when NOM_ENS>0 -> S-sim track now = SOCO_NOFLIP=1 (perm -1) instead of NOM_ENS=0.
    KEPT S-sim best = S7: SOCO_NOFLIP=1 SOCO_ARM=none SOCO_OUT=refine OVR="MU=1.0,WIN=3": dev +4.94 SOC / +2.89 CC.
+   S-flip: S8 (=S3+MU1,WIN3) +11.83; arm oracle 74.57 vs dist 71.11; S11 both-arm analysis -> arm by consensus inlier
+   ratio (+0.75±0.28 paired, chosen offline among ~20 rules). KEPT S-flip best = S12: SOCO_ARM=cons OVR="MU=1.0,WIN=3"
+   dev +12.58 SOC / +3.96 CC (2 decodes/pair). Ported to SPair (ARM_SEL=cons, seq 28): +0.06 -> discarded.
+   Reports running: scripts/queue_soco_rep.sh (R12/R7 on intra, cross, test; several hours).
+   Supervised TLR (no tuning): val TF +1.47 / noTTA +2.68 / T3 +0.81; test TF +1.45 / noTTA +2.70 (top1 87.70/77.49/21.84
+   -> 88.87/79.54/26.73); DV +0.13. TTA_GATE (seq 27) timed out on dev, no help on tlrsup/diysc val -> discarded.
+   Limitation (a): scripts/promotion.py: @.10 recoverable kpts promoted: DV 16.9%, DV++ 36.5%, T3 44.5%; gap to or30
+   closed 8.1 / 26.5 / 35.5 %.
    Disk: delete cache/soco/dinov2_b14 before extracting another backbone (300 GB cap).
    Supervised: method 'tlrsup' (scripts/sup_hook.py; released supervised TLR ckpt best_856.PTH; meta symlinked from tlr).
    NOTE dev = SPair trn = the supervised model's training data -> no tuning on it; transfer settings, report val/test.
