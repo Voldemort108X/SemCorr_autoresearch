@@ -8,6 +8,15 @@
    Our copy: scripts/soco_eval.py. Mirror permutation from left/right keypoint names.
 2. Supervised model: does the strategy help supervised features? DIY-SC on SPair (done: +2.6 test vs dv +0.3; TTA hurts)
    and on SOCO (backbone dinov2_b14_diy_sc); look for other supervised checkpoints; make TTA safe for supervised.
+   PROGRESS (2026-11-20 18:15): cache/soco/dinov2_b14 (38 GB, orig+flip, 57x57), evaluator scripts/soco_eval.py validated
+   vs paper per-class (±0.1). Runner scripts/soco_run.sh -> soco_results.tsv, runs/soco/. SOCO-dev = trainsplits/train,
+   10 pairs/class (1000 pairs, ~4 min). Tracks: S-sim (similarity only: no flip arm, no flip ensemble) and S-flip
+   (pair-level flip arm 'dist' + flip ensemble, mirror perm from left/right names). Heads: argmax (exact), soft
+   (OmniProbe soft_eval), dv0.5 (paper port). Dev: S2 S-sim refine +4.40 SOC/+2.48 CC (soft +3.01/+1.25, dv +1.56/+0.53);
+   S3 S-flip +11.35/+3.73. Padding mask (S4) = noise. queue_soco1 (S5.x sweeps) then queue_sup1 (tlrsup val/test).
+   Disk: delete cache/soco/dinov2_b14 before extracting another backbone (300 GB cap).
+   Supervised: method 'tlrsup' (scripts/sup_hook.py; released supervised TLR ckpt best_856.PTH; meta symlinked from tlr).
+   NOTE dev = SPair trn = the supervised model's training data -> no tuning on it; transfer settings, report val/test.
 3. Paper limitations (5_results.tex): (a) gap to top-k needs global reasoning; (b) mirror-equivalent parts both
    cycle-consistent; (c) bird/horse regress with Déjà Vu (ours: bird ±0, horse +1.4 on test).
 
