@@ -352,7 +352,7 @@ Decoders selected on TLR dev, transferred without tuning; Δ vs top-1 (mean over
 | supervised TLR (released ckpt), val | +0.15 | +1.47 | **+2.68** | +0.81 |
 | supervised TLR, test | +0.13 | +1.45 | **+2.70** (88.87 / 79.54 / 26.73) | +0.84 |
 | DIY-SC val | +0.24 | +2.42 | **+2.92** | +2.82 |
-| DIY-SC test | +0.29 | +2.58 | (pending) | +3.08 |
+| DIY-SC test | +0.29 | +2.58 | **+2.94** (77.46 / 62.71 / 13.83) | +3.08 |
 
 - **Yes, the strategy helps supervised features**, by about 10–20× Déjà Vu's gain, but only without the per-pair TTA.
 - The gain is concentrated at @.01 (+4.9 for supervised TLR test): the refinement and flip-ensemble parts transfer.

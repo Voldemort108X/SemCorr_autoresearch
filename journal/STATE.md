@@ -33,6 +33,11 @@
    DIY-SC SOCO: cache/soco/dinov2_b14_diy_sc extracting (disk ~289 GB after; delete a SOCO cache before any further
    backbone). queue_soco4: D1-D4 = S7/S12 configs x TTA on/off on DIY-SC SOCO-dev (paper DIY-SC intra argmax
    69.18/78.81, dv .5 70.07/78.79; cross 64.39/73.40 -> 64.91/72.51). queue_sup2: DIY-SC SPair test noTTA.
+   2026-11-20 23:10: R12 INTRA full (20000): argmax 60.52/78.79 (paper 60.53/78.79), dv .5 +1.67/+0.54 (paper +1.66),
+   S12 72.72/82.71 = +12.19/+3.92. S19 (S7 + CAP 10 + MU 1.5) paired vs S7 +0.32±0.23 SOC (CC -0.23±0.16) -> KEPT S-sim.
+   DIY-SC SOCO dev (argmax 68.87/78.18; dv +0.64/-0.27): S-sim TTA +2.53, noTTA +2.94 (D2); S-flip TTA +6.31, noTTA
+   +6.70 (D4) -> TTA off again (within noise, faster, consistent with SPair). DIY-SC SPair test noTTA +2.939 (TTA +2.581).
+   queue_soco5: S20 (S12 + S19 knobs) dev; RD4/RD2 DIY-SC intra+cross; R19 intra/cross/test.
 3. Paper limitations (5_results.tex): (a) gap to top-k needs global reasoning; (b) mirror-equivalent parts both
    cycle-consistent; (c) bird/horse regress with Déjà Vu (ours: bird ±0, horse +1.4 on test).
 
