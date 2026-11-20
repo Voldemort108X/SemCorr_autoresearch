@@ -96,6 +96,7 @@ def main():
     QB = os.environ.get('SOCO_QB', '1') == '1'
     DVL = [float(x) for x in os.environ.get('SOCO_DV', '0.5').split(',') if x]
     OURS = os.environ.get('SOCO_OURS', '1') == '1'
+    NOFLIP = os.environ.get('SOCO_NOFLIP', '0') == '1'
     PADM = os.environ.get('SOCO_PADMASK', '0') == '1'
     SOFT = os.environ.get('SOCO_SOFT', '1') == '1'
     meta = json.load(open(f'cache/soco/{bb}/meta.json'))
@@ -162,6 +163,8 @@ def main():
                 t1 = time.time()
                 names = [k['name'] for k in p['src_keypoints']]
                 perm = torch.tensor([map_s.get(mirror_name(n), -1) for n in names], dtype=torch.long)
+                if NOFLIP:   # similarity-only track: no mirror information at all (other-arm views fall back to own)
+                    perm = torch.full_like(perm, -1)
                 kpi = (ky * W + kx).long()
                 fsq = fs.clone()
                 if QB:   # the query rows carry the bilinear query feature (as OmniProbe)
@@ -185,7 +188,7 @@ def main():
                     srcmf = vm(p['src_imsize'], int(A['hw'][si]), True)
                     trgm = vm(p['trg_imsize'], int(B['hw'][ti]))
                 arm = 0
-                if ARM == 'dist':
+                if ARM == 'dist' and not NOFLIP:
                     d0 = (2 - 2 * (fs @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean()
                     d1 = (2 - 2 * (ff @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean()
                     arm = int(d1 < d0)
@@ -242,7 +245,7 @@ def main():
             ds.append(100 * np.mean(s1)); dc.append(100 * np.mean(c1))
         boot[h] = {'dSOC_std': float(np.std(ds)), 'dCC_std': float(np.std(dc))}
     summ = dict(split=split, backbone=bb, image_size=S, n_pairs=npair, n_classes=len(classes), max_pairs=maxp,
-                ovr=os.environ.get('OVR', '') + (' PADMASK' if PADM else ''), out=OUT, arm=ARM, qb=QB, sec=time.time() - t0, sec_decode=tdec,
+                ovr=os.environ.get('OVR', '') + (' PADMASK' if PADM else '') + (' NOFLIP' if NOFLIP else ''), out=OUT, arm=ARM, qb=QB, sec=time.time() - t0, sec_decode=tdec,
                 results=res, boot=boot)
     os.makedirs(out, exist_ok=True)
     json.dump(summ, open(f'{out}/soco_metrics.json', 'w'), indent=1)
