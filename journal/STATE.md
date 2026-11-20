@@ -38,6 +38,10 @@
    DIY-SC SOCO dev (argmax 68.87/78.18; dv +0.64/-0.27): S-sim TTA +2.53, noTTA +2.94 (D2); S-flip TTA +6.31, noTTA
    +6.70 (D4) -> TTA off again (within noise, faster, consistent with SPair). DIY-SC SPair test noTTA +2.939 (TTA +2.581).
    queue_soco5: S20 (S12 + S19 knobs) dev; RD4/RD2 DIY-SC intra+cross; R19 intra/cross/test.
+   2026-11-21 00:00: R7 INTRA (S-sim S7) 65.59/81.57 = +5.07/+2.79. RD4 DIY-SC INTRA (S-flip noTTA) 75.97/81.18 =
+   +6.78/+2.36 (argmax 69.18/78.81 = paper; dv +0.87/-0.03 vs paper +0.89/-0.02). S20 (S12+CAP10,MU1.5) dev 71.55 <
+   71.86 -> discarded. Intra per class: S-flip improves all 100 classes (min glider +2.7; max folding_chair +35.2,
+   bed, armchair, highchair, dishwasher = front/back-symmetric furniture); S-sim worst pickup_truck -4.3, 3 classes <0.
 3. Paper limitations (5_results.tex): (a) gap to top-k needs global reasoning; (b) mirror-equivalent parts both
    cycle-consistent; (c) bird/horse regress with Déjà Vu (ours: bird ±0, horse +1.4 on test).
 
