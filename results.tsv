@@ -157,3 +157,4 @@ ref	8a85faa	1.560	1.53	1.99	1.16	69.69	54.47	11.02	157	robust	robust	ref_8a85faa
 27	4c6a574	2.512	1.80	3.55	2.18	75.52	60.65	13.48	437	T1	analysis	TTA_GATE on DIY-SC val (report): +2.512 vs +2.416 TTA / +2.92 no TTA [vs_dv +2.272 std 0.122; split val/diysc]
 27	4c6a574	1.688	0.57	1.07	3.42	88.48	78.99	24.19	416	sup	analysis	TTA_GATE on supervised TLR val (report) [vs_dv +1.540 std 0.108; split val/tlrsup]
 23	76e06ef	2.939	3.03	4.06	1.73	77.46	62.71	13.83	741	sup	analysis	seq23 without TTA on DIY-SC TEST (report; completes the supervised table): +2.939 vs +2.581 with TTA [vs_dv +2.758 std 0.078; split test/diysc]
+29	fc570d3	4.888	4.94	6.46	3.27	73.13	58.52	12.92	841	T1	discard	ARM_SEL=dense (SOCO S22 pair-arm rule ported to SPair): +4.888 vs best +4.918 -> discard (841 s under GPU sharing) [vs_dv +4.111 std 0.132; split dev/tlr]

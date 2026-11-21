@@ -342,7 +342,34 @@ Within noise or harmful:
     - Choosing the arm whose decode has the higher consensus inlier ratio closes about a fifth of that gap: +0.75 ± .28
       paired, chosen offline among ~20 label-free rules on dev.
     - Ported back to SPair (seq 28) the same rule gives +0.06, which is within noise, so it was discarded there.
-- **Full splits:** see the table below (filled in from `soco_results.tsv`).
+- **Dense orientation evidence (S22, kept).** The pair arm is chosen by the similarity-consensus inlier ratio of
+  *all* dense mutual-NN matches (inside the non-padding area), not only of the ~10 keypoint predictions.
+  - Dev: 72.48 / 82.36 (+13.20 / +3.99), paired over S12 +0.62 ± .21 SOC.
+  - It needs one decode per pair instead of two.
+  - It ties on DIY-SC (−0.01 ± .16, at half the cost).
+  - On SPair (seq 29) it gives dev +4.89 vs +4.92, so it was discarded there: SPair's adaptive-pose arm is already
+    good.
+- **Full splits** (20,000 pairs each; SOC / CC; Δ vs argmax; paired bootstrap std ≈ .1–.2;
+  `soco_results.tsv`):
+
+  | DINOv2-B/14 | intra | cross | trainsplits/test |
+  |---|---|---|---|
+  | argmax (paper: 60.53 / 78.79, 54.88 / 72.55) | 60.52 / 78.79 | 54.88 / 72.55 | |
+  | Déjà Vu λ .5 (paper: +1.66 / +0.53, +1.81 / +0.25) | +1.67 / +0.54 | +1.80 / +0.26 | |
+  | DV++ S-sim (S7) | 65.59 / 81.57 (+5.07 / +2.79) | | |
+  | DV++ S-flip (S12) | 72.72 / 82.71 (+12.19 / +3.92) | 65.77 / 76.81 (+10.89 / +4.25) | |
+  | DV++ S-flip (S22) | | | |
+
+  | DIY-SC (TTA off) | intra | cross |
+  |---|---|---|
+  | argmax (paper: 69.18 / 78.81, 64.39 / 73.40) | 69.18 / 78.81 | 64.39 / 73.40 |
+  | Déjà Vu λ .5 (paper: 70.07 / 78.79, 64.91 / 72.51) | +0.87 / −0.03 | +0.53 / −0.87 |
+  | DV++ S-sim (D2) | 71.69 / 79.77 (+2.51 / +0.96) | 66.25 / 73.56 (+1.87 / +0.16) |
+  | DV++ S-flip (D4) | **75.97 / 81.18 (+6.78 / +2.36)** | **69.27 / 74.92 (+4.88 / +1.52)** |
+
+- **Per class** (intra, S12): the flip arm improves all 100 classes, from glider +2.7 up to front/back-symmetric
+  furniture (folding chair +35, bed +32, armchair +32, highchair +30). S-sim drops below argmax on 3 classes (worst:
+  pickup truck −4.3).
 
 ### 9.2 Supervised features
 Decoders selected on TLR dev, transferred without tuning; Δ vs top-1 (mean over PCK@.10/.05/.01):
