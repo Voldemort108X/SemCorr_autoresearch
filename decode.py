@@ -191,6 +191,13 @@ def decode_arm(pair, a):
             g.manual_seed(0)
             r, _ = consensus(qxy, cxy, score.masked_fill(~in_pool, -1e9), valid, model=MODEL, thr=THR, gen=g)
             score = s0 - MU * r.clamp(max=CAP) / nP
+    if DPRIOR > 0:   # geometric prior from the similarity fitted to ALL dense mutual-NN matches of this arm
+        _, dinf = dense_arm_score(pair, a, ret_info=True)
+        if dinf.get('ok'):
+            from decode_lib.consensus import _apply
+            pq = _apply(dinf['B'], qxy)                                          # [M,2]
+            rd = (cxy - pq.unsqueeze(1)).norm(dim=-1)
+            score = score - DPRIOR * rd.clamp(max=CAP) / nP
     score = score.masked_fill(~in_pool, -1e9)
     best = score.argmax(1)
     if DECOL_R > 0:
@@ -545,22 +552,24 @@ def force_arm(pair, a):
     return dict(pair, src=[pair['src'][0], src1], arm_of_kpt=arm)
 
 
+DPRIOR = 0.0     # weight of the dense-MNN similarity prior on the candidates (0 = off)
 DENSE_THR = 3.0   # ARM_SEL='dense': inlier threshold (patches) of the dense-MNN similarity consensus
 
 
-def dense_arm_score(pair, a):
+def dense_arm_score(pair, a, ret_info=False):
     """Inlier ratio of a RANSAC similarity (no reflection) fitted to all mutual-NN matches between source arm a and
     the target, inside both masks. The arm whose matches are more consistent is the right orientation."""
     A, T = pair['src'][a], pair['trg']
     nP = pair['nP']
-    sv, tv = torch.nonzero(A['mask'], as_tuple=True)[0], torch.nonzero(T['mask'], as_tuple=True)[0]
+    sv = torch.nonzero(A.get('dmask', A['mask']), as_tuple=True)[0]   # 'dmask': optional mask for the dense matches
+    tv = torch.nonzero(T.get('dmask', T['mask']), as_tuple=True)[0]
     if sv.numel() < 3 or tv.numel() < 3:
-        return 0.0
+        return (0.0, {}) if ret_info else 0.0
     Sd = A['desc'][sv] @ T['desc'][tv].t()
     n12, n21 = Sd.argmax(1), Sd.argmax(0)
     ii = torch.nonzero(n21[n12] == torch.arange(sv.numel(), device=Sd.device), as_tuple=True)[0]
     if ii.numel() < 3:
-        return 0.0
+        return (0.0, {}) if ret_info else 0.0
     ps, pt = sv[ii], tv[n12[ii]]
     q = torch.stack([ps % nP, ps // nP], -1).float()
     c = torch.stack([pt % nP, pt // nP], -1).float().unsqueeze(1)
@@ -568,7 +577,8 @@ def dense_arm_score(pair, a):
     g = torch.Generator(device=Sd.device)
     g.manual_seed(0)
     _, inf = consensus(q, c, u, torch.ones(ii.numel(), dtype=torch.bool, device=Sd.device), model='sim', thr=DENSE_THR, gen=g)
-    return float(inf['n_inl'] / max(inf['n'], 1)) if inf.get('ok') else 0.0
+    sc = float(inf['n_inl'] / max(inf['n'], 1)) if inf.get('ok') else 0.0
+    return (sc, inf) if ret_info else sc
 
 
 def decode(pair):

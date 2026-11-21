@@ -228,6 +228,8 @@ def main():
                                 trg=dict(desc=ft, mask=trgm),
                                 arm_of_kpt=torch.full((N,), arm_, dtype=torch.long, device='cuda') * ok1.long(),
                                 perm=pc, nP=W, anno=float(S))
+                    if D.DPRIOR > 0:   # dense-MNN prior: matches restricted to the non-padding image area
+                        pair['src'][0]['dmask'], pair['src'][1]['dmask'], pair['trg']['dmask'] = spm, spmf, tpm
                     C.PairState = lambda *a_, **k_: base(*a_, num_patches=W, anno=float(S))
                     D._STATS = [] if ARM in ('both', 'cons') else None
                     try:
@@ -245,7 +247,7 @@ def main():
                     dummy = (kpi == 0).cpu()   # keypoints the PairState treats as dummies (patch 0) fall back to argmax
                     pr[dummy] = preds['argmax'][dummy]
                     return pr, (stt[-1] if stt else None)
-                if DENSE or ARM == 'dense':
+                if DENSE or ARM == 'dense' or D.DPRIOR > 0:
                     def vm2(imsize, hw, flip=False):
                         w_, h_ = imsize[0] * S / hw, imsize[1] * S / hw
                         c_ = (torch.arange(W, device='cuda').float() + 0.5) * S / W
