@@ -83,3 +83,4 @@
 - 10:45 2026-11-21: seq30 (SPair seq23 + DPRIOR .5) dev +4.940 vs +4.918 → discard (+0.022 < .05; 750 s). Report §9.1 gets an S24 bullet.
 - 10:55 2026-11-21: offline arm rules on S21 (dense stats): MNN count 68.79, inlier count 72.44, ratio·n^w 72.40–72.44 vs inlier ratio 72.48 (oracle 74.57) → arm evidence saturated with dense similarity stats; not pursued.
 - 11:45 2026-11-21: R22 cross 66.32/76.80 (+11.44/+4.25), paired vs R12 cross +0.55±.06 SOC. Running R24 cross 75, R22 test 44.
+- 12:45 2026-11-21: R24 cross 66.60/76.85 (+11.72/+4.30; vs R22 +0.28±.03, vs R12 +0.83±.07). R22 test 72.88/82.57 (+12.58/+3.85; vs R12 +0.14±.07). Running R24 test 74/100 (last queued run).
