@@ -42,6 +42,11 @@
    +6.78/+2.36 (argmax 69.18/78.81 = paper; dv +0.87/-0.03 vs paper +0.89/-0.02). S20 (S12+CAP10,MU1.5) dev 71.55 <
    71.86 -> discarded. Intra per class: S-flip improves all 100 classes (min glider +2.7; max folding_chair +35.2,
    bed, armchair, highchair, dishwasher = front/back-symmetric furniture); S-sim worst pickup_truck -4.3, 3 classes <0.
+   2026-11-21 05:15: daily_2026-11-21 sent. Cross: R12 65.77/76.81 (+10.89/+4.25; dv +1.80 = paper), RD4 DIY 69.27/74.92
+   (+4.88/+1.52), RD2 DIY 66.25/73.56 (+1.87/+0.16). NEW S-flip best S22: pair arm by the similarity-consensus inlier
+   ratio of ALL dense mutual-NN matches (soco_eval SOCO_ARM=dense, thr 3) -> 72.48/82.36 dev, paired vs S12 +0.62±0.21,
+   one decode/pair (S21 = both-arm analysis; scripts/soco_armrules.py). Ported to SPair as decode ARM_SEL=dense (seq 29).
+   queue_dense: seq29 SPair dev, D5 (DIY-SC S22 noTTA dev), R22 intra/cross/test.
 3. Paper limitations (5_results.tex): (a) gap to top-k needs global reasoning; (b) mirror-equivalent parts both
    cycle-consistent; (c) bird/horse regress with Déjà Vu (ours: bird ±0, horse +1.4 on test).
 
