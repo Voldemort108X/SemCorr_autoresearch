@@ -38,6 +38,7 @@ ROW_SMOOTH = 0.7   # weight of a smoothed-query view in the forward row (selecti
 REF_ORIG, SEL_ORIG = False, False   # TTA ablations: refinement / selection on the non-adapted descriptors
 DECOL_R, DECOL_EX, DECOL_MARGIN = 0.0, 3.0, 1e9   # mirror-pair de-collision radius / exclusion / max score drop
 SWAP_T = -1.0    # mirror-pair orientation test: swap the two predictions of a mirror pair if cos < -SWAP_T (-1 = off)
+DSWAP = False    # mirror_swap: take the linear part from the dense-MNN similarity (dense_arm_score) instead of the predictions
 K_PEAK, R_NMS, K_TOP = 0, 1, 0   # peak pool: K_PEAK local maxima (NMS radius R_NMS) of the forward row + top K_TOP patches
 DENSE_MU, DENSE_R = 0.0, 6.0   # dense-flow residual weight / source radius (patches)
 REF_CYC, REF_SIG = 0.0, 0.0   # refinement on sim - REF_CYC*d_cyc/w ; Gaussian window prior sigma (patches)
@@ -335,6 +336,11 @@ def mirror_swap(pair, a, st, qxy, p):
     s = B[:, 0, :].norm(dim=-1)
     sup = ((res < 4.0).float().sum(1)).masked_fill((s < 0.2) | (s > 5), -1)
     R = B[sup.argmax(), :2, :]                                                           # row-vector linear part
+    if DSWAP:   # orientation from ALL dense mutual-NN matches of this arm (independent of the keypoint predictions)
+        _, dinf = dense_arm_score(pair, a, ret_info=True)
+        if not dinf.get('ok'):
+            return p
+        R = dinf['B'][:2, :]
     pos = torch.full((pair['perm'].numel(),), -1, dtype=torch.long, device=p.device)
     pos[vi] = torch.arange(M, device=p.device)
     out = p.clone()
