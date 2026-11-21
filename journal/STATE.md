@@ -47,6 +47,11 @@
    ratio of ALL dense mutual-NN matches (soco_eval SOCO_ARM=dense, thr 3) -> 72.48/82.36 dev, paired vs S12 +0.62±0.21,
    one decode/pair (S21 = both-arm analysis; scripts/soco_armrules.py). Ported to SPair as decode ARM_SEL=dense (seq 29).
    queue_dense: seq29 SPair dev, D5 (DIY-SC S22 noTTA dev), R22 intra/cross/test.
+   2026-11-21 06:40: seq 29 (SPair ARM_SEL=dense) +4.888 -> discard. D5 (DIY-SC dense arm) = D4 (-0.01±0.16, half cost).
+   DPRIOR (decode: candidates penalised by distance to the similarity fitted to all dense MNN matches; SOCO uses padding
+   dmask): S-flip S24 = S22 + DPRIOR .5 -> 72.72/82.34, paired vs S22 +0.24±0.12 -> KEPT (S-flip best).
+   S-sim: S23 (S7+DPRIOR 1) +0.20±0.23 vs S19 (near-miss), S25/S26 no -> S19 stays. S27 (DPRIOR 1 flip) no.
+   Full: R19 intra 65.74/81.04; R7 cross 60.48/75.68 (+5.60/+3.13). queue_s24: D6 + R24 intra/cross/test.
 3. Paper limitations (5_results.tex): (a) gap to top-k needs global reasoning; (b) mirror-equivalent parts both
    cycle-consistent; (c) bird/horse regress with Déjà Vu (ours: bird ±0, horse +1.4 on test).
 
