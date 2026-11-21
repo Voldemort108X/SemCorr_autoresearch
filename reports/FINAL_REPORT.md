@@ -349,6 +349,12 @@ Within noise or harmful:
   - It ties on DIY-SC (−0.01 ± .16, at half the cost).
   - On SPair (seq 29) it gives dev +4.89 vs +4.92, so it was discarded there: SPair's adaptive-pose arm is already
     good.
+- **Dense similarity prior (S24, kept).** On top of S22, each candidate is penalised by its distance to the location
+  predicted by the similarity transform fitted on the dense mutual-NN matches (weight 0.5, distance capped).
+  - Dev: 72.72 / 82.34, paired over S22 +0.24 ± .12 SOC.
+  - Intra: 73.27 / 82.74, paired over S22 +0.32 ± .03 SOC.
+  - On SPair (seq 30) it gives dev +4.94 vs +4.92 (+0.02 < 0.05), so it was discarded there.
+  - On DIY-SC SOCO dev (D6) it ties with D4 (−0.02 ± .20).
 - **Full splits** (20,000 pairs each; SOC / CC; Δ vs argmax; paired bootstrap std ≈ .1–.2;
   `soco_results.tsv`):
 
