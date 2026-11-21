@@ -333,7 +333,9 @@ Within noise or harmful:
   | DV++ S-sim, settings from SPair dev | +4.40 | +2.48 |
   | **DV++ S-sim, SOCO-tuned (S7: μ 1.0, window 3)** | **+4.94** | **+2.89** |
   | DV++ S-flip, SPair settings + distance arm rule (S3) | +11.35 | +3.73 |
-  | **DV++ S-flip, SOCO-tuned + arm by consensus inlier ratio (S12)** | **+12.58** | **+3.96** |
+  | DV++ S-flip, SOCO-tuned + arm by consensus inlier ratio (S12) | +12.58 | +3.96 |
+  | DV++ S-flip, arm by dense-MNN consensus (S22) | +13.20 | +3.99 |
+  | **DV++ S-flip, S22 + dense similarity prior .5 (S24)** | **+13.44** | **+3.97** |
 
   - Of the SPair knobs, only μ (consensus weight) 0.5 → 1.0 and refinement window 2 → 3 moved on SOCO.
   - λ, reverse rank, β, TTA steps and query smoothing were flat or worse.
