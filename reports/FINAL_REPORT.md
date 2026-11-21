@@ -50,6 +50,19 @@ flip-view weight in the refinement); seq 17 numbers are kept where useful. Every
 | PF-Pascal | +4.18 | +3.83 | +2.57 |
 | SPair-U | +1.94 | +1.67 | +0.51 |
 
+**SOCO (§9.1; DINOv2-B/14, SOC / CC = PCK@.10 on the correct instance / any instance; selected on SOCO-dev).** Full
+splits, Δ vs argmax:
+
+| | intra | cross | trainsplits/test |
+|---|---|---|---|
+| argmax | 60.52 / 78.79 | 54.88 / 72.55 | 60.30 / 78.71 |
+| Déjà Vu λ .5 | +1.67 / +0.54 | +1.80 / +0.26 | +1.54 / +0.75 |
+| DV++ similarity-only (S7) | +5.07 / +2.79 | +5.60 / +3.13 | +4.97 / +2.83 |
+| **DV++ with dense pair-level flip arm + dense prior (S24)** | **+12.75 / +3.96** | **+11.72 / +4.30** | **+12.82 / +3.88** |
+
+**Supervised features (§9.2).** DV++ without per-pair TTA gives SPair test +2.70 (supervised TLR) and +2.94 (DIY-SC) vs
+Déjà Vu's +0.13 / +0.29, and on SOCO with DIY-SC +6.78 / +2.36 (intra) vs Déjà Vu's +0.87 / −0.03.
+
 ## 2. Method: DV++ (training-free)
 
 Notation as in the paper: S = F_s F_tᵀ on the 60×60 grid, restricted to the dilated object masks; query patch ℓ_i;
