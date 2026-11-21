@@ -82,3 +82,4 @@
 - 10:30 2026-11-21: R24 intra 73.27/82.74 (+12.75/+3.96): paired +0.32±.03 vs R22, +0.56±.06 vs R12 → S24 transfers. R7 test 65.27/81.54 (+4.97/+2.83), R19 test 65.48/81.00 (+5.18/+2.28; vs R7 +0.21±.08 SOC, CC −0.54). Running R22 cross 56, R24 cross 20. Launched queue_spdprior.sh: seq30 = seq23 + DPRIOR 0.5 on SPair dev.
 - 10:45 2026-11-21: seq30 (SPair seq23 + DPRIOR .5) dev +4.940 vs +4.918 → discard (+0.022 < .05; 750 s). Report §9.1 gets an S24 bullet.
 - 10:55 2026-11-21: offline arm rules on S21 (dense stats): MNN count 68.79, inlier count 72.44, ratio·n^w 72.40–72.44 vs inlier ratio 72.48 (oracle 74.57) → arm evidence saturated with dense similarity stats; not pursued.
+- 11:45 2026-11-21: R22 cross 66.32/76.80 (+11.44/+4.25), paired vs R12 cross +0.55±.06 SOC. Running R24 cross 75, R22 test 44.

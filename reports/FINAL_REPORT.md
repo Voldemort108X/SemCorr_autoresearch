@@ -365,7 +365,7 @@ Within noise or harmful:
   | DV++ S-sim (S7) | 65.59 / 81.57 (+5.07 / +2.79) | 60.48 / 75.68 (+5.60 / +3.13) | 65.27 / 81.54 (+4.97 / +2.83) |
   | DV++ S-sim (S19) | 65.74 / 81.04 (+5.22 / +2.25) | 60.28 / 74.99 (+5.41 / +2.43) | 65.48 / 81.00 (+5.18 / +2.28) |
   | DV++ S-flip (S12) | 72.72 / 82.71 (+12.19 / +3.92) | 65.77 / 76.81 (+10.89 / +4.25) | 72.74 / 82.60 (+12.44 / +3.89) |
-  | DV++ S-flip (S22) | 72.96 / 82.70 (+12.43 / +3.91) | | |
+  | DV++ S-flip (S22) | 72.96 / 82.70 (+12.43 / +3.91) | 66.32 / 76.80 (+11.44 / +4.25) | |
   | **DV++ S-flip (S24, dev best)** | **73.27 / 82.74 (+12.75 / +3.96)** | | |
 
   | DIY-SC (TTA off) | intra | cross |
@@ -376,7 +376,7 @@ Within noise or harmful:
   | DV++ S-flip (D4) | **75.97 / 81.18 (+6.78 / +2.36)** | **69.27 / 74.92 (+4.88 / +1.52)** |
 
 - **Dev selection vs full splits (paired bootstrap on the full split).**
-  - S22 over S12, intra: +0.24 ± .05 SOC, −0.01 ± .03 CC. The dense arm rule's dev gain (+0.62 ± .21) holds in sign,
+  - S22 over S12: intra +0.24 ± .05 SOC / −0.01 ± .03 CC; cross +0.55 ± .06 SOC / −0.01 ± .04 CC. The dense arm rule's dev gain (+0.62 ± .21) holds in sign,
     at about 40 % of its size.
   - S24 over S22, intra: +0.32 ± .03 SOC, +0.04 ± .02 CC (dev: +0.24 ± .12). S24 over S12: +0.56 ± .06 SOC. The
     dense prior transfers fully.
