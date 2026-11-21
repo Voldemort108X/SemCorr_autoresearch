@@ -545,6 +545,32 @@ def force_arm(pair, a):
     return dict(pair, src=[pair['src'][0], src1], arm_of_kpt=arm)
 
 
+DENSE_THR = 3.0   # ARM_SEL='dense': inlier threshold (patches) of the dense-MNN similarity consensus
+
+
+def dense_arm_score(pair, a):
+    """Inlier ratio of a RANSAC similarity (no reflection) fitted to all mutual-NN matches between source arm a and
+    the target, inside both masks. The arm whose matches are more consistent is the right orientation."""
+    A, T = pair['src'][a], pair['trg']
+    nP = pair['nP']
+    sv, tv = torch.nonzero(A['mask'], as_tuple=True)[0], torch.nonzero(T['mask'], as_tuple=True)[0]
+    if sv.numel() < 3 or tv.numel() < 3:
+        return 0.0
+    Sd = A['desc'][sv] @ T['desc'][tv].t()
+    n12, n21 = Sd.argmax(1), Sd.argmax(0)
+    ii = torch.nonzero(n21[n12] == torch.arange(sv.numel(), device=Sd.device), as_tuple=True)[0]
+    if ii.numel() < 3:
+        return 0.0
+    ps, pt = sv[ii], tv[n12[ii]]
+    q = torch.stack([ps % nP, ps // nP], -1).float()
+    c = torch.stack([pt % nP, pt // nP], -1).float().unsqueeze(1)
+    u = Sd[ii, n12[ii]].unsqueeze(1)
+    g = torch.Generator(device=Sd.device)
+    g.manual_seed(0)
+    _, inf = consensus(q, c, u, torch.ones(ii.numel(), dtype=torch.bool, device=Sd.device), model='sim', thr=DENSE_THR, gen=g)
+    return float(inf['n_inl'] / max(inf['n'], 1)) if inf.get('ok') else 0.0
+
+
 def decode(pair):
     if SD_W != 1.0:
         pair = reweight(pair, SD_W)
@@ -622,6 +648,12 @@ def decode(pair):
         c0, c1 = res[0][1], res[1][1]
         pick = base_arm if c0 == c1 else int(c1 > c0)
         return res[pick][0]
+    elif ARM_PAIR and not T3_MODEL and ARM_SEL == 'dense':   # pair arm by the similarity-consensus inlier ratio of
+        # ALL dense mutual-NN matches (source mask x target mask) in each arm (SOCO S22); tie -> base arm
+        base_arm = 1 if bool((pair['arm_of_kpt'] == 1).any()) else 0
+        r = [dense_arm_score(pair, a_) for a_ in (0, 1)]
+        pick = base_arm if r[0] == r[1] else int(r[1] > r[0])
+        pair = force_arm(pair, pick)
     elif ARM_PAIR and not T3_MODEL:   # (training-free path only) decode ALL keypoints in the arm chosen for the pair (arm-1 queries rebuilt from source info)
         pair = force_arm(pair, 1 if bool((pair['arm_of_kpt'] == 1).any()) else 0)
     if SELF_TRAIN > 0 and TTA_STEPS > 0 and not T3_MODEL:
