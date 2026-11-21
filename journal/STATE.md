@@ -88,3 +88,4 @@
 - 13:31 2026-11-21: S30 (S24+MU 1.5) −0.17±.12, S31 (MU 0.5) −0.08±.16, S32 (CAP 10) +0.09±.20/CC −0.20 → all discard; S24 is a local optimum on its knobs.
 - 14:52 2026-11-21: timing reruns (idle GPU, dev): T7/T12/T24 reproduce S7/S12/S24 exactly; decoder ms/pair 118 / 245 / 134. Added to report §9.1.
 - 15:00 2026-11-21: wording fix: CC = any target keypoint of the same concept (part copies), so CC−SOC = symmetric/repeated-part confusion, not wrong object instance. daily_2026-11-21 used 'wrong-instance' → correct in daily_2026-11-22. GPU idle; S24 local optimum.
+- 16:10 2026-11-21: S33 (S24+SWAP_T .5) −0.01±.11, S34 (+DSWAP) +0.02±.12, S35 (DECOL_R 2) −0.41±.19 → discard. Report §9.3(b) updated.

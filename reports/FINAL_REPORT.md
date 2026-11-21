@@ -448,6 +448,12 @@ Decoders selected on TLR dev, transferred without tuning; Δ vs top-1 (mean over
     intra: 18.3, 16.0, 10.0 and 9.5.
   - The left/right ambiguity is therefore mostly a pair-level orientation problem when whole objects are mirrored. It
     stays unsolved per keypoint (near vs far side).
+  - Per-keypoint fixes on top of S24 (SOCO dev, paired vs S24) did not help:
+    - swap a mirror pair whose target offset opposes the source offset, with orientation from the predictions (S33):
+      −0.01 ± .11 SOC;
+    - the same test with orientation from the dense-MNN similarity (S34): +0.02 ± .12;
+    - mirror-pair de-collision (S35): −0.41 ± .19 SOC, −0.67 ± .12 CC.
+    The remaining CC − SOC gap is not resolved by geometric tests at the keypoint level.
 - **(c) "Bird / horse regress with Déjà Vu."** With TLR features (test @.10, per keypoint;
   `reports/tables_test.md`):
 
