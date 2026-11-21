@@ -370,6 +370,9 @@ Within noise or harmful:
   - Intra: 73.27 / 82.74, paired over S22 +0.32 ± .03 SOC.
   - On SPair (seq 30) it gives dev +4.94 vs +4.92 (+0.02 < 0.05), so it was discarded there.
   - On DIY-SC SOCO dev (D6) it ties with D4 (−0.02 ± .20).
+- **Cost** (dev, 1,000 pairs, idle RTX 4090, decoder time only; reruns T7 / T12 / T24 reproduce the dev numbers
+  exactly): S7 118 ms/pair, S12 245 ms/pair (two arm decodes), S24 134 ms/pair (one decode + dense statistics). S24 is
+  therefore both better and about 1.8× faster than S12.
 - **Full splits** (20,000 pairs each; SOC / CC; Δ vs argmax; paired bootstrap std ≈ .1–.2;
   `soco_results.tsv`):
 
