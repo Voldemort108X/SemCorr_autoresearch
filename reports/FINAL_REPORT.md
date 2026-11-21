@@ -357,9 +357,9 @@ Within noise or harmful:
   | argmax (paper: 60.53 / 78.79, 54.88 / 72.55) | 60.52 / 78.79 | 54.88 / 72.55 | 60.30 / 78.71 |
   | Déjà Vu λ .5 (paper: +1.66 / +0.53, +1.81 / +0.25) | +1.67 / +0.54 | +1.80 / +0.26 | +1.54 / +0.75 |
   | DV++ S-sim (S7) | 65.59 / 81.57 (+5.07 / +2.79) | 60.48 / 75.68 (+5.60 / +3.13) | |
-  | DV++ S-sim (S19) | 65.74 / 81.04 (+5.22 / +2.25) | | |
+  | DV++ S-sim (S19) | 65.74 / 81.04 (+5.22 / +2.25) | 60.28 / 74.99 (+5.41 / +2.43) | |
   | DV++ S-flip (S12) | 72.72 / 82.71 (+12.19 / +3.92) | 65.77 / 76.81 (+10.89 / +4.25) | 72.74 / 82.60 (+12.44 / +3.89) |
-  | DV++ S-flip (S22) | | | |
+  | DV++ S-flip (S22) | 72.96 / 82.70 (+12.43 / +3.91) | | |
   | DV++ S-flip (S24, dev best) | | | |
 
   | DIY-SC (TTA off) | intra | cross |
@@ -369,6 +369,12 @@ Within noise or harmful:
   | DV++ S-sim (D2) | 71.69 / 79.77 (+2.51 / +0.96) | 66.25 / 73.56 (+1.87 / +0.16) |
   | DV++ S-flip (D4) | **75.97 / 81.18 (+6.78 / +2.36)** | **69.27 / 74.92 (+4.88 / +1.52)** |
 
+- **Dev selection vs full splits (paired bootstrap on the full split).**
+  - S22 over S12, intra: +0.24 ± .05 SOC, −0.01 ± .03 CC. The dense arm rule's dev gain (+0.62 ± .21) holds in sign,
+    at about 40 % of its size.
+  - S19 over S7 (kept on dev at +0.32 ± .23 SOC, −0.23 CC): intra +0.15 ± .05 SOC / −0.53 ± .04 CC, cross
+    −0.20 ± .07 SOC / −0.69 ± .05 CC. It does not transfer, so **S7 remains the recommended S-sim setting**. The 1,000
+    pair dev split cannot resolve gains of ~0.3, so the S-sim knob sweep after S7 overfitted dev.
 - **Per class** (intra, S12): the flip arm improves all 100 classes, from glider +2.7 up to front/back-symmetric
   furniture (folding chair +35, bed +32, armchair +32, highchair +30). S-sim drops below argmax on 3 classes (worst:
   pickup truck −4.3).
