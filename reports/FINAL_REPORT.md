@@ -50,7 +50,8 @@ flip-view weight in the refinement); seq 17 numbers are kept where useful. Every
 | PF-Pascal | +4.18 | +3.83 | +2.57 |
 | SPair-U | +1.94 | +1.67 | +0.51 |
 
-**SOCO (§9.1; DINOv2-B/14, SOC / CC = PCK@.10 on the correct instance / any instance; selected on SOCO-dev).** Full
+**SOCO (§9.1; DINOv2-B/14, SOC / CC = PCK@.10 against the exact target keypoint / against any target keypoint of the same part concept, e.g.
+any wheel; selected on SOCO-dev).** Full
 splits, Δ vs argmax:
 
 | | intra | cross | trainsplits/test |
@@ -441,9 +442,10 @@ Decoders selected on TLR dev, transferred without tuning; Δ vs top-1 (mean over
   promotion rate (`scripts/promotion.py`).
 - **(b) "Mirror-equivalent parts are both cycle-consistent."**
   - On SPair, mirror swaps are not reduced (≈ 6 % for every decoder; §5).
-  - On SOCO, a wrong-instance pick is an error under SOC but still correct under CC, so the CC − SOC gap measures
-    these picks. The pair-level flip arm (S-flip) shrinks that gap on dev from 19.1 (argmax) and 17.1 (S-sim) to
-    10.5 points.
+  - On SOCO, a pick of the wrong copy of a repeated or symmetric part (another wheel, the other leg) is an error under
+    SOC but still correct under CC. The CC − SOC gap therefore measures these picks.
+  - The pair-level flip arm shrinks that gap. On dev: 19.1 (argmax), 17.1 (S-sim, S7), 10.5 (S12), 9.6 (S24). On
+    intra: 18.3, 16.0, 10.0 and 9.5.
   - The left/right ambiguity is therefore mostly a pair-level orientation problem when whole objects are mirrored. It
     stays unsolved per keypoint (near vs far side).
 - **(c) "Bird / horse regress with Déjà Vu."** With TLR features (test @.10, per keypoint;
