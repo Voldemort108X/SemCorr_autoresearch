@@ -22,6 +22,7 @@ import torch.nn.functional as F
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from vendor import core as C
 import decode as D
+from decode_lib.consensus import consensus
 
 ROOT = '/workspace/SemCorr_proj/Datasets/SOCOv1'
 SPLITS = {'dev': 'trainsplits/train', 'test': 'trainsplits/test', 'intra': 'intra', 'cross': 'cross'}
@@ -99,6 +100,9 @@ def main():
     NOFLIP = os.environ.get('SOCO_NOFLIP', '0') == '1'
     PADM = os.environ.get('SOCO_PADMASK', '0') == '1'
     SOFT = os.environ.get('SOCO_SOFT', '1') == '1'
+    DENSE = os.environ.get('SOCO_DENSE', '0') == '1'   # analysis: also store dense-MNN orientation stats per pair
+    DENSE_KEY = os.environ.get('SOCO_DENSE_KEY', 'all')
+    DENSE_THR = float(os.environ.get('SOCO_DENSE_THR', '3'))   # 'dense' arm rule: inlier threshold (patches)
     meta = json.load(open(f'cache/soco/{bb}/meta.json'))
     S = meta['image_size']
     FS = Feats(bb)
@@ -197,6 +201,27 @@ def main():
                     d0 = (2 - 2 * (fs @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean()
                     d1 = (2 - 2 * (ff @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean()
                     arm = int(d1 < d0)
+                def dense_cons(fa, pm):
+                    # pair-level orientation evidence from ALL dense mutual-NN matches (not only the keypoints):
+                    # RANSAC similarity (no reflection) on MNN pairs inside the non-padding area; inlier ratio
+                    Sd = fa @ ft.t()
+                    Sd = Sd.masked_fill(~pm.unsqueeze(1), -2).masked_fill(~tpm.unsqueeze(0), -2)
+                    n12 = Sd.argmax(1); n21 = Sd.argmax(0)
+                    ii = torch.nonzero((n21[n12] == torch.arange(n12.numel(), device='cuda')) & pm, as_tuple=True)[0]
+                    if ii.numel() < 3:
+                        return dict(all=0.0, top=0.0, n=int(ii.numel()))
+                    jj = n12[ii]
+                    qd = torch.stack([ii % W, ii // W], -1).float()
+                    cd = torch.stack([jj % W, jj // W], -1).float().unsqueeze(1)
+                    ud = Sd[ii, jj].unsqueeze(1)
+                    r = {}
+                    for nm, sel in (('all', torch.arange(ii.numel(), device='cuda')), ('top', ud[:, 0].argsort(descending=True)[:100])):
+                        g = torch.Generator(device='cuda'); g.manual_seed(0)
+                        _, inf = consensus(qd[sel], cd[sel], ud[sel], torch.ones(sel.numel(), dtype=torch.bool, device='cuda'),
+                                           model='sim', thr=DENSE_THR, gen=g)
+                        r[nm] = float(inf['n_inl'] / max(inf['n'], 1)) if inf.get('ok') else 0.0
+                    r['n'] = int(ii.numel())
+                    return r
                 def run(arm_):
                     pair = dict(src=[dict(desc=fsq, mask=srcm, kp=kpi, kp_valid=torch.ones(N, dtype=torch.bool, device='cuda')),
                                      dict(desc=ffq, mask=srcmf, kp=kp1, kp_valid=ok1)],
@@ -220,6 +245,20 @@ def main():
                     dummy = (kpi == 0).cpu()   # keypoints the PairState treats as dummies (patch 0) fall back to argmax
                     pr[dummy] = preds['argmax'][dummy]
                     return pr, (stt[-1] if stt else None)
+                if DENSE or ARM == 'dense':
+                    def vm2(imsize, hw, flip=False):
+                        w_, h_ = imsize[0] * S / hw, imsize[1] * S / hw
+                        c_ = (torch.arange(W, device='cuda').float() + 0.5) * S / W
+                        mx, my = c_ < w_, c_ < h_
+                        if flip:
+                            mx = mx.flip(0)
+                        return (my.view(-1, 1) & mx.view(1, -1)).reshape(-1)
+                    spm = vm2(p['src_imsize'], int(A['hw'][si])); spmf = vm2(p['src_imsize'], int(A['hw'][si]), True)
+                    tpm = vm2(p['trg_imsize'], int(B['hw'][ti]))
+                if ARM == 'dense' and not NOFLIP:   # pair arm by the dense-MNN consensus inlier ratio (one decode)
+                    e0, e1 = dense_cons(fs, spm), dense_cons(ff, spmf)
+                    arm = int(e1[DENSE_KEY] > e0[DENSE_KEY])
+                    armstats.setdefault(cls, []).append(dict(dn0=e0, dn1=e1))
                 if ARM in ('both', 'cons'):   # analysis: decode in both arms; 'ours' = dist rule; per-pair stats saved
                     d0 = float((2 - 2 * (fs @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean())
                     d1 = float((2 - 2 * (ff @ ft.t()).max(1)[0]).clamp(min=0).sqrt().mean())
@@ -230,7 +269,10 @@ def main():
                     if ARM == 'cons' and s0 is not None and s1 is not None and s0['cons'] != s1['cons']:
                         use1 = s1['cons'] > s0['cons']   # pair-level arm by the consensus inlier ratio (tie -> dist)
                     preds['ours'] = p1 if use1 else p0
-                    armstats.setdefault(cls, []).append(dict(d0=d0, d1=d1, s0=s0, s1=s1, nok=int(ok1.sum())))
+                    rec = dict(d0=d0, d1=d1, s0=s0, s1=s1, nok=int(ok1.sum()))
+                    if DENSE:
+                        rec['dn0'], rec['dn1'] = dense_cons(fs, spm), dense_cons(ff, spmf)
+                    armstats.setdefault(cls, []).append(rec)
                 else:
                     preds['ours'] = run(arm)[0]
                 tdec += time.time() - t1
