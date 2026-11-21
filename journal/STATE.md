@@ -77,3 +77,4 @@
   changes), reports/tables_test.md (per-category, per-image, bootstrap CIs).
 - Next: (1) mirror-ambiguity signal (occlusion/depth cues?); (2) DIY-SC-safe TTA (dev-selectable); (3) final report
   writing from 2026-11-22 12:00; daily report 2026-11-20 ~04:00.
+- 08:25 2026-11-21: R12 test (trainsplits/test, 10000 pairs) 72.74/82.60 (+12.44/+3.89; argmax 60.30/78.71, DV +1.54/+0.75). R7 cross 60.48/75.68 (+5.60/+3.13). FINAL_REPORT §9.1 table updated (S19, S24 rows added). Running: R19 cross 94/100, R22 intra 99/100, R24 intra 42/100, R7 test 4/100.
